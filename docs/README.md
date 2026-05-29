@@ -128,10 +128,19 @@ docs/
 
 ---
 
+
+## Diagrama Entidad-Relación
+
+El siguiente diagrama representa las entidades principales del sistema y sus relaciones.
+
+![DER](docs/der.png)
+
 ## Próximos Pasos
 
-* Diseño del DER (Diagrama Entidad-Relación).
-* Implementación del backend en Go.
-* Desarrollo del frontend en React.
-* Configuración de Docker Compose.
-* Implementación de testing automatizado.
+- Implementación del backend en Go.
+- Desarrollo del frontend en React.
+- Configuración de Docker Compose.
+- Implementación de testing automatizado.
+
+---
+
