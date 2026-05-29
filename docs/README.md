@@ -103,7 +103,6 @@ El sistema calculará el promedio de puntuaciones y permitirá visualizar un ran
 
 ## Estructura del Proyecto
 
-```txt
 Proyecto-desarrollo-sw/
 │
 ├── backend/
@@ -117,9 +116,7 @@ Proyecto-desarrollo-sw/
 │
 ├── README.md
 └── .gitignore
-```
 
----
 
 ## Documentación
 

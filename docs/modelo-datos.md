@@ -72,17 +72,13 @@ Representa una entrada comprada por un usuario para un evento.
 
 Un usuario puede tener muchas entradas.
 
-```txt
 Usuario 1 ---- N Entrada
-```
 
 ## Evento → Entrada
 
 Un evento puede tener muchas entradas.
 
-```txt
 Evento 1 ---- N Entrada
-```
 
 ## Entrada
 
@@ -116,5 +112,4 @@ Representa la calificación que un usuario realiza sobre un evento.
 
 Un usuario puede realizar muchas puntuaciones.
 
-```txt
 Usuario 1 ---- N Puntuación

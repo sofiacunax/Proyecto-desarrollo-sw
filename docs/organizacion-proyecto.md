@@ -20,7 +20,6 @@ Desarrollar una aplicación web tipo Ticketek que permita a usuarios clientes ex
 
 ## Estructura del repositorio
 
-```txt
 Proyecto-desarrollo-sw/
 ├── backend/
 ├── frontend/
@@ -29,7 +28,6 @@ Proyecto-desarrollo-sw/
 ├── .env.example
 ├── README.md
 └── .gitignore
-```
 
 ## Ramas de Git
 

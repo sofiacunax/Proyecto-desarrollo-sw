@@ -145,13 +145,20 @@ Todas las operaciones críticas que involucren múltiples cambios en la base de 
 
 El backend seguirá una arquitectura por capas:
 
-Controller → Service → Repository → Base de Datos
+Controller → Service → DAO → Base de Datos
 
-Las reglas de negocio residirán en la capa Service.
+Las responsabilidades estarán separadas de la siguiente manera:
 
-La capa Repository tendrá únicamente responsabilidades de persistencia.
+- Controller: recepción de solicitudes HTTP y construcción de respuestas.
+- Service: implementación de reglas de negocio.
+- DAO: acceso y persistencia de datos mediante GORM.
+- Domain: definición de entidades y modelos del negocio.
 
----
+Las reglas de negocio residirán exclusivamente en la capa Service.
+
+La capa DAO tendrá únicamente responsabilidades de acceso a datos.
+
+Esta organización busca mejorar la mantenibilidad, escalabilidad y testabilidad del sistema.
 
 # 13. Dockerización
 
@@ -172,8 +179,9 @@ Como funcionalidad adicional del grupo, se permitirá que los usuarios puntúen 
 Reglas:
 
 - Solo usuarios autenticados podrán puntuar eventos.
+- Solo podrán puntuar eventos para los cuales hayan adquirido una entrada.
 - La puntuación mínima será 0.
 - La puntuación máxima será 5.
 - Cada usuario podrá puntuar una vez por evento.
 - El sistema calculará el promedio de puntuaciones de cada evento.
-- Existirá una vista con los eventos mejor rankeados.
+- Existirá una vista con los eventos mejor valorados.
