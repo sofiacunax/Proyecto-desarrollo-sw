@@ -1,8 +1,6 @@
 package dao
 
 import (
-	"fmt"
-
 	"proyecto-desarrollo-sw/backend/db"
 	"proyecto-desarrollo-sw/backend/models"
 )
@@ -32,15 +30,15 @@ func (d *UsuarioDAO) CrearUsuario(usuario models.Usuario) error {
 	return err
 }
 
-func (d *UsuarioDAO) BuscarPorEmail(email string) (*models.Usuario, error) { //valida con la db lo q postman envia login
-
-	var usuario models.Usuario
+func (d *UsuarioDAO) BuscarPorEmail(email string) (*models.Usuario, error) {
 
 	query := `
 		SELECT id, nombre, email, password_hash, rol
 		FROM usuarios
 		WHERE email = ?
 	`
+
+	var usuario models.Usuario
 
 	err := db.DB.QueryRow(query, email).Scan(
 		&usuario.ID,
@@ -51,7 +49,7 @@ func (d *UsuarioDAO) BuscarPorEmail(email string) (*models.Usuario, error) { //v
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("usuario no encontrado")
+		return nil, err
 	}
 
 	return &usuario, nil

@@ -43,22 +43,27 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	var request dtos.LoginRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
+
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "datos inválidos",
 		})
+
 		return
 	}
 
-	err := c.AuthService.Login(request)
+	token, err := c.AuthService.Login(request)
 
 	if err != nil {
+
 		ctx.JSON(http.StatusUnauthorized, gin.H{
 			"error": err.Error(),
 		})
+
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "login correcto",
+		"token":   token,
 	})
 }

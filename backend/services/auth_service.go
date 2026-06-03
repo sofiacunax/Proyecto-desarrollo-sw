@@ -6,6 +6,7 @@ import (
 	"proyecto-desarrollo-sw/backend/dao"
 	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
+	"proyecto-desarrollo-sw/backend/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,12 +36,12 @@ func (s *AuthService) Register(request dtos.RegisterRequest) error {
 	return s.UsuarioDAO.CrearUsuario(usuario)
 }
 
-func (s *AuthService) Login(request dtos.LoginRequest) error {
+func (s *AuthService) Login(request dtos.LoginRequest) (string, error) {
 
 	usuario, err := s.UsuarioDAO.BuscarPorEmail(request.Email)
 
 	if err != nil {
-		return fmt.Errorf("credenciales inválidas")
+		return "", fmt.Errorf("credenciales inválidas")
 	}
 
 	err = bcrypt.CompareHashAndPassword(
@@ -49,8 +50,18 @@ func (s *AuthService) Login(request dtos.LoginRequest) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("credenciales inválidas")
+		return "", fmt.Errorf("credenciales inválidas")
 	}
 
-	return nil
+	token, err := utils.GenerateToken(
+		usuario.ID,
+		usuario.Email,
+		usuario.Rol,
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }

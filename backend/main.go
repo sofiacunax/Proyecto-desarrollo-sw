@@ -5,6 +5,7 @@ import (
 
 	"proyecto-desarrollo-sw/backend/controllers"
 	"proyecto-desarrollo-sw/backend/db"
+	"proyecto-desarrollo-sw/backend/utils"
 )
 
 func main() {
@@ -17,6 +18,15 @@ func main() {
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
+
+	private := router.Group("/private")
+	private.Use(utils.AuthMiddleware())
+
+	private.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "acceso permitido",
+		})
+	})
 
 	router.Run(":8080")
 }
