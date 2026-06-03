@@ -1,0 +1,13 @@
+
+/*EJECUTAR EN EL WORKBENCH DE MYSQL*/
+CREATE DATABASE proyecto_desarrollo_sw;
+
+USE proyecto_desarrollo_sw;
+
+CREATE TABLE usuarios (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nombre VARCHAR(100) NOT NULL,
+email VARCHAR(100) NOT NULL UNIQUE,
+password_hash VARCHAR(255) NOT NULL,
+rol VARCHAR(20) NOT NULL
+);
