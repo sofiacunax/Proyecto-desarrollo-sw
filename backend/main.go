@@ -28,5 +28,14 @@ func main() {
 		})
 	})
 
+	admin := private.Group("/admin")
+	admin.Use(utils.AdminMiddleware())
+
+	admin.GET("/test", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "solo admin",
+		})
+	})
+
 	router.Run(":8080")
 }
