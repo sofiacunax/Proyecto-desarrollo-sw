@@ -16,6 +16,7 @@ func main() {
 
 	authController := controllers.AuthController{}
 	eventoController := controllers.NewEventoController()
+	puntuacionController := controllers.NewPuntuacionController()
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
@@ -25,6 +26,10 @@ func main() {
 	router.GET("/eventos/:id", eventoController.ObtenerEventoPorID)
 	router.PUT("/eventos/:id", eventoController.ActualizarEvento)
 	router.DELETE("/eventos/:id", eventoController.EliminarEvento)
+
+	router.POST("/puntuaciones", puntuacionController.CrearPuntuacion)
+	router.GET("/eventos/:id/puntuaciones", puntuacionController.ObtenerPuntuacionesPorEvento)
+	router.GET("/eventos/:id/promedio", puntuacionController.ObtenerPromedioPorEvento)
 
 	private := router.Group("/private")
 	private.Use(utils.AuthMiddleware())
