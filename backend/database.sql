@@ -26,3 +26,13 @@ CREATE TABLE eventos (
     imagen_url VARCHAR(255),
     estado VARCHAR(20) NOT NULL
 );
+
+CREATE TABLE puntuaciones (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    evento_id INT NOT NULL,
+    puntuacion INT NOT NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (evento_id) REFERENCES eventos(id)
+);
