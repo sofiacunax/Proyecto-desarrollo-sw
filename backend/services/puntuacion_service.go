@@ -48,3 +48,7 @@ func (service *PuntuacionService) ObtenerPuntuacionesPorEvento(eventoID int) ([]
 func (service *PuntuacionService) ObtenerPromedioPorEvento(eventoID int) (float64, error) {
 	return service.PuntuacionDAO.ObtenerPromedioPorEvento(eventoID)
 }
+
+func (service *PuntuacionService) ObtenerRankingEventos() ([]dtos.RankingDTO, error) {
+	return service.PuntuacionDAO.ObtenerRankingEventos()
+}
