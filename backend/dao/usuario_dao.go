@@ -2,6 +2,8 @@ package dao
 
 import (
 	"fmt"
+
+	"proyecto-desarrollo-sw/backend/db"
 	"proyecto-desarrollo-sw/backend/models"
 )
 
@@ -13,21 +15,44 @@ var Usuarios []models.Usuario
 
 func (d *UsuarioDAO) CrearUsuario(usuario models.Usuario) error {
 
-	Usuarios = append(Usuarios, usuario)
+	query := `
+        INSERT INTO usuarios
+        (nombre, email, password_hash, rol)
+        VALUES (?, ?, ?, ?)
+    `
 
-	fmt.Println(usuario)
+	_, err := db.DB.Exec(
+		query,
+		usuario.Nombre,
+		usuario.Email,
+		usuario.PasswordHash,
+		usuario.Rol,
+	)
 
-	return nil
+	return err
 }
 
-func (d *UsuarioDAO) BuscarPorEmail(email string) (*models.Usuario, error) {
+func (d *UsuarioDAO) BuscarPorEmail(email string) (*models.Usuario, error) { //valida con la db lo q postman envia login
 
-	for _, usuario := range Usuarios {
+	var usuario models.Usuario
 
-		if usuario.Email == email {
-			return &usuario, nil
-		}
+	query := `
+		SELECT id, nombre, email, password_hash, rol
+		FROM usuarios
+		WHERE email = ?
+	`
+
+	err := db.DB.QueryRow(query, email).Scan(
+		&usuario.ID,
+		&usuario.Nombre,
+		&usuario.Email,
+		&usuario.PasswordHash,
+		&usuario.Rol,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("usuario no encontrado")
 	}
 
-	return nil, fmt.Errorf("usuario no encontrado")
+	return &usuario, nil
 }
