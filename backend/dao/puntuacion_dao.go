@@ -2,6 +2,7 @@ package dao
 
 import (
 	"proyecto-desarrollo-sw/backend/db"
+	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
 )
 
@@ -78,4 +79,43 @@ func (dao *PuntuacionDAO) ObtenerPromedioPorEvento(eventoID int) (float64, error
 	}
 
 	return promedio, nil
+}
+
+func (dao *PuntuacionDAO) ObtenerRankingEventos() ([]dtos.RankingDTO, error) {
+	query := `
+		SELECT 
+			e.id,
+			e.titulo,
+			COALESCE(AVG(p.puntuacion), 0) AS promedio
+		FROM eventos e
+		LEFT JOIN puntuaciones p ON e.id = p.evento_id
+		GROUP BY e.id, e.titulo
+		ORDER BY promedio DESC
+	`
+
+	rows, err := db.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ranking []dtos.RankingDTO
+
+	for rows.Next() {
+		var item dtos.RankingDTO
+
+		err := rows.Scan(
+			&item.EventoID,
+			&item.Titulo,
+			&item.Promedio,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		ranking = append(ranking, item)
+	}
+
+	return ranking, nil
 }
