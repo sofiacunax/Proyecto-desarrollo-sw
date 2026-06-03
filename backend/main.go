@@ -15,9 +15,16 @@ func main() {
 	router := gin.Default()
 
 	authController := controllers.AuthController{}
+	eventoController := controllers.NewEventoController()
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
+
+	router.POST("/eventos", eventoController.CrearEvento)
+	router.GET("/eventos", eventoController.ObtenerEventos)
+	router.GET("/eventos/:id", eventoController.ObtenerEventoPorID)
+	router.PUT("/eventos/:id", eventoController.ActualizarEvento)
+	router.DELETE("/eventos/:id", eventoController.EliminarEvento)
 
 	private := router.Group("/private")
 	private.Use(utils.AuthMiddleware())
