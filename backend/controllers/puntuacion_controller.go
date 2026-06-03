@@ -72,3 +72,13 @@ func (controller *PuntuacionController) ObtenerPromedioPorEvento(ctx *gin.Contex
 
 	ctx.JSON(http.StatusOK, gin.H{"promedio": promedio})
 }
+
+func (controller *PuntuacionController) ObtenerRankingEventos(ctx *gin.Context) {
+	ranking, err := controller.PuntuacionService.ObtenerRankingEventos()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error al obtener ranking"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, ranking)
+}
