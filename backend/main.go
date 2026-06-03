@@ -30,6 +30,7 @@ func main() {
 	router.POST("/puntuaciones", puntuacionController.CrearPuntuacion)
 	router.GET("/eventos/:id/puntuaciones", puntuacionController.ObtenerPuntuacionesPorEvento)
 	router.GET("/eventos/:id/promedio", puntuacionController.ObtenerPromedioPorEvento)
+	router.GET("/eventos/ranking", puntuacionController.ObtenerRankingEventos)
 
 	private := router.Group("/private")
 	private.Use(utils.AuthMiddleware())
