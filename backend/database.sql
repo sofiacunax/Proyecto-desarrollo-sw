@@ -36,3 +36,13 @@ CREATE TABLE puntuaciones (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
     FOREIGN KEY (evento_id) REFERENCES eventos(id)
 );
+
+CREATE TABLE entradas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    evento_id INT NOT NULL,
+    estado VARCHAR(20) NOT NULL,
+
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (evento_id) REFERENCES eventos(id)
+);
