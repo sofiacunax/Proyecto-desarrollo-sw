@@ -17,6 +17,7 @@ func main() {
 	authController := controllers.AuthController{}
 	eventoController := controllers.NewEventoController()
 	puntuacionController := controllers.NewPuntuacionController()
+	entradaController := controllers.NewEntradaController()
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
@@ -34,6 +35,10 @@ func main() {
 
 	private := router.Group("/private")
 	private.Use(utils.AuthMiddleware())
+	private.POST("/entradas", entradaController.ComprarEntrada)
+	private.GET("/mis-entradas", entradaController.ObtenerMisEntradas)
+	private.PUT("/entradas/:id/cancelar", entradaController.CancelarEntrada)
+	private.PUT("/entradas/:id/transferir", entradaController.TransferirEntrada)
 
 	private.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
