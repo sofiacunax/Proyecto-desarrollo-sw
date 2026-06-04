@@ -22,11 +22,8 @@ func main() {
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
 
-	router.POST("/eventos", eventoController.CrearEvento)
 	router.GET("/eventos", eventoController.ObtenerEventos)
 	router.GET("/eventos/:id", eventoController.ObtenerEventoPorID)
-	router.PUT("/eventos/:id", eventoController.ActualizarEvento)
-	router.DELETE("/eventos/:id", eventoController.EliminarEvento)
 
 	router.POST("/puntuaciones", puntuacionController.CrearPuntuacion)
 	router.GET("/eventos/:id/puntuaciones", puntuacionController.ObtenerPuntuacionesPorEvento)
@@ -48,6 +45,10 @@ func main() {
 
 	admin := private.Group("/admin")
 	admin.Use(utils.AdminMiddleware())
+
+	admin.POST("/eventos", eventoController.CrearEvento)
+	admin.PUT("/eventos/:id", eventoController.ActualizarEvento)
+	admin.DELETE("/eventos/:id", eventoController.EliminarEvento)
 
 	admin.GET("/test", func(c *gin.Context) {
 		c.JSON(200, gin.H{

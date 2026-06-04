@@ -14,7 +14,7 @@ func Connect() {
 
 	DB, err = sql.Open(
 		"mysql",
-		"root:300106@tcp(localhost:3306)/proyecto_desarrollo_sw",
+		"root:Popia115a@tcp(localhost:3306)/proyecto_desarrollo_sw",
 	)
 
 	if err != nil {
