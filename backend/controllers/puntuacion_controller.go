@@ -28,7 +28,21 @@ func (controller *PuntuacionController) CrearPuntuacion(ctx *gin.Context) {
 		return
 	}
 
-	err := controller.PuntuacionService.CrearPuntuacion(request)
+	usuarioIDValue, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "usuario no autenticado"})
+		return
+	}
+
+	usuarioIDFloat, ok := usuarioIDValue.(float64)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "usuario invalido"})
+		return
+	}
+
+	usuarioID := int(usuarioIDFloat)
+
+	err := controller.PuntuacionService.CrearPuntuacion(usuarioID, request)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
