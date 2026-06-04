@@ -18,13 +18,13 @@ func NewPuntuacionService() *PuntuacionService {
 	}
 }
 
-func (service *PuntuacionService) CrearPuntuacion(request dtos.PuntuacionDTO) error {
+func (service *PuntuacionService) CrearPuntuacion(usuarioID int, request dtos.PuntuacionDTO) error {
 
 	if request.Puntuacion < 0 || request.Puntuacion > 5 {
 		return errors.New("la puntuacion debe estar entre 0 y 5")
 	}
 
-	if request.UsuarioID <= 0 {
+	if usuarioID <= 0 {
 		return errors.New("usuario invalido")
 	}
 
@@ -33,7 +33,7 @@ func (service *PuntuacionService) CrearPuntuacion(request dtos.PuntuacionDTO) er
 	}
 
 	puntuacion := models.Puntuacion{
-		UsuarioID:  request.UsuarioID,
+		UsuarioID:  usuarioID,
 		EventoID:   request.EventoID,
 		Puntuacion: request.Puntuacion,
 	}

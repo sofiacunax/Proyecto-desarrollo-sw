@@ -34,7 +34,8 @@ CREATE TABLE puntuaciones (
     puntuacion INT NOT NULL,
 
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
-    FOREIGN KEY (evento_id) REFERENCES eventos(id)
+    FOREIGN KEY (evento_id) REFERENCES eventos(id),
+    UNIQUE (usuario_id, evento_id)
 );
 
 CREATE TABLE entradas (
