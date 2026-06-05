@@ -1,17 +1,54 @@
-const authService = {
+const API_URL = "http://localhost:8080"
 
-  login: async (email, password) => {
-    console.log("Login:", email, password)
-  },
+export async function login(email, password) {
+  const response = await fetch(
+    `${API_URL}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        password
+      })
+    }
+  )
 
-  register: async (userData) => {
-    console.log("Registro:", userData)
-  },
+  const data = await response.json()
 
-  logout: () => {
-    console.log("Logout")
+  if (!response.ok) {
+    throw new Error(data.error)
   }
 
+  return data
 }
 
-export default authService
+export async function register(
+  nombre,
+  email,
+  password
+) {
+  const response = await fetch(
+    `${API_URL}/auth/register`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nombre,
+        email,
+        password
+      })
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error)
+  }
+
+  return data
+}
