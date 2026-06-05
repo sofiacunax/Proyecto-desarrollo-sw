@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"proyecto-desarrollo-sw/backend/controllers"
@@ -13,6 +14,7 @@ func main() {
 	db.Connect()
 
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	authController := controllers.AuthController{}
 	eventoController := controllers.NewEventoController()

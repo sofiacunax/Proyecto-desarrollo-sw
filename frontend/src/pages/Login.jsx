@@ -1,7 +1,26 @@
 import "./../styles/Login.css"
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { login } from "../services/authService"
 
 export default function Login() {
+  const [email, setEmail] = useState("")
+const [password, setPassword] = useState("")
+
+const navigate = useNavigate()
+const handleLogin = async (e) => {
+  e.preventDefault()
+
+  try {
+    const data = await login(email, password)
+
+    localStorage.setItem("token", data.token)
+
+    navigate("/dashboard")
+  } catch (error) {
+    alert(error.message)
+  }
+}
   return (
     <div className="login-page">
 
@@ -32,27 +51,34 @@ export default function Login() {
 
 </div>
 
-          <form>
+          <form onSubmit={handleLogin}>
 
             <div className="form-group">
               <label>Email</label>
               <input
-                type="email"
-                placeholder="ejemplo@email.com"
-              />
+  type="email"
+  placeholder="ejemplo@email.com"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+/>
             </div>
 
             <div className="form-group">
               <label>Contraseña</label>
               <input
-                type="password"
-                placeholder="********"
-              />
+  type="password"
+  placeholder="********"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+/>
             </div>
 
-            <Link to="/dashboard" className="login-button">
+            <button
+  type="submit"
+  className="login-button"
+>
   Iniciar sesión
-</Link>
+</button>
 
           </form>
 

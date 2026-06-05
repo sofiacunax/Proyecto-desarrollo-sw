@@ -1,16 +1,25 @@
-import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import "../styles/Dashboard.css"
 
 export default function Dashboard() {
+  const navigate = useNavigate()
+
+const handleLogout = () => {
+  localStorage.removeItem("token")
+  navigate("/")
+}
   return (
     <div className="dashboard-page">
 
       <div className="dashboard-navbar">
         <h1 className="dashboard-logo">Eventia</h1>
 
-        <Link to="/" className="logout-btn">
-          Cerrar sesión
-        </Link>
+        <button
+  className="logout-btn"
+  onClick={handleLogout}
+>
+  Cerrar sesión
+</button>
       </div>
 
       <div className="dashboard-content">
