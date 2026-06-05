@@ -185,40 +185,26 @@
 }
 
 .login-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   width: 100%;
+  padding: 14px;
 
-  height: 54px;
-
-  border: none;
-
-  border-radius: 12px;
-
-  margin-top: 15px;
-
-  background: linear-gradient(
-  135deg,
-  #B68AD8,
-  #C99AE7
-);
-
+  background: #b58add;
   color: white;
 
-  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+
+  text-decoration: none;
   font-weight: 600;
-
   cursor: pointer;
-
-  transition: 0.3s;
 }
 
 .login-button:hover {
-  background: linear-gradient(
-    135deg,
-    #A56ECF,
-    #B68AD8
-  );
-
-  transform: translateY(-2px);
+  background: #a677d4;
 }
 
 .login-links {

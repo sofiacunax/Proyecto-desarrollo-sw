@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom"
 export default function Dashboard() {
   return (
     <div style={{ padding: "40px" }}>
@@ -7,9 +8,11 @@ export default function Dashboard() {
         Esta será la página principal después del login.
       </p>
 
-      <button>
-        Cerrar sesión
-      </button>
+      <Link to="/">
+  <button>
+    Cerrar sesión
+  </button>
+</Link>
     </div>
   )
 }
