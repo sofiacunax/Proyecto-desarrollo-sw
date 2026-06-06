@@ -300,6 +300,15 @@ body{
   padding-top:20px;
 }
 
+.meta{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  color:#6b7280;
+  font-size:14px;
+  min-height:70px;
+}
+
 .card-bottom button{
   width:100%;
   height:46px;
