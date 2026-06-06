@@ -264,6 +264,8 @@ body{
   color:#6b7280;
   line-height:1.5;
   margin-bottom:15px;
+
+  min-height:100px;
 }
 
 .meta{
@@ -295,7 +297,7 @@ body{
 
 .card-bottom{
   margin-top:auto;
-  margin-top:20px;
+  padding-top:20px;
 }
 
 .card-bottom button{

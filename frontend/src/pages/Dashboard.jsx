@@ -198,9 +198,9 @@ function EventCard({ evento }) {
 
     alert("Puntuación guardada")
   } catch (error) {
-    console.error("Error al enviar puntuación:", error)
-    alert("Error de conexión con el backend")
-  }
+  console.error(error)
+  alert(error.message)
+}
 }
 
   return (
