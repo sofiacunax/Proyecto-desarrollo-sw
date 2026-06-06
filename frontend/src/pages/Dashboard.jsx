@@ -156,6 +156,7 @@ function EventCard({ evento }) {
   const titulo = evento.titulo || evento.Titulo || evento.nombre || evento.Nombre || "Evento"
   const descripcion = evento.descripcion || evento.Descripcion || ""
   const fecha = evento.fecha || evento.Fecha || ""
+  const horario = evento.horario || evento.Horario || ""
   const ubicacion = evento.ubicacion || evento.Ubicacion || ""
   const categoria = evento.categoria || evento.Categoria || "Evento"
   const precio = evento.precio || evento.Precio || 0
@@ -242,6 +243,7 @@ function EventCard({ evento }) {
 
         <div className="meta">
           <span>{fecha}</span>
+           <span>{horario}</span>
           <span>{ubicacion}</span>
         </div>
 
