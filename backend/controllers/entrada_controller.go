@@ -25,7 +25,7 @@ func (controller *EntradaController) ComprarEntrada(ctx *gin.Context) {
 	var request dtos.ComprarEntradaDTO
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "datos invalidos"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Datos invalidos"})
 		return
 	}
 
@@ -43,7 +43,7 @@ func (controller *EntradaController) ComprarEntrada(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{
-		"message": "entrada comprada correctamente",
+		"message": "Entrada comprada correctamente",
 	})
 }
 
@@ -52,11 +52,11 @@ func (controller *EntradaController) ObtenerMisEntradas(ctx *gin.Context) {
 	userIDValue, _ := ctx.Get("userID")
 	userID := int(userIDValue.(float64))
 
-	entradas, err := controller.EntradaService.ObtenerMisEntradas(userID)
+	entradas, err := controller.EntradaService.ObtenerMisEntradasDTO(userID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "error al obtener entradas",
+			"error": "Error al obtener entradas",
 		})
 		return
 	}
@@ -72,7 +72,7 @@ func (controller *EntradaController) CancelarEntrada(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "id invalido",
+			"error": "Id Invalido",
 		})
 		return
 	}
@@ -93,7 +93,7 @@ func (controller *EntradaController) CancelarEntrada(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "entrada cancelada correctamente",
+		"message": "Entrada cancelada correctamente",
 	})
 }
 
@@ -105,7 +105,7 @@ func (controller *EntradaController) TransferirEntrada(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "id invalido",
+			"error": "Id Invalido",
 		})
 		return
 	}
@@ -114,7 +114,7 @@ func (controller *EntradaController) TransferirEntrada(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "datos invalidos",
+			"error": "Datos Invalidos",
 		})
 		return
 	}
@@ -136,6 +136,6 @@ func (controller *EntradaController) TransferirEntrada(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "entrada transferida correctamente",
+		"message": "Entrada transferida correctamente",
 	})
 }
