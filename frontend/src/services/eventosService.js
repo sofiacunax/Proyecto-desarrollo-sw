@@ -19,3 +19,10 @@ export async function getRankingEventos() {
 
   return response.json()
 }
+export async function getEventoPorId(id) {
+  const response = await fetch(
+    `http://localhost:8080/eventos/${id}`
+  )
+
+  return await response.json()
+}
