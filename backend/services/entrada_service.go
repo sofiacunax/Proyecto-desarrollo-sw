@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"proyecto-desarrollo-sw/backend/dao"
+	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
 )
 
@@ -49,6 +50,9 @@ func (service *EntradaService) ComprarEntrada(usuarioID int, eventoID int) error
 func (service *EntradaService) ObtenerMisEntradas(usuarioID int) ([]models.Entrada, error) {
 	return service.EntradaDAO.ObtenerPorUsuario(usuarioID)
 }
+func (service *EntradaService) ObtenerMisEntradasDTO(usuarioID int) ([]dtos.MisEntradaDTO, error) {
+	return service.EntradaDAO.ObtenerMisEntradasDTO(usuarioID)
+}
 
 func (service *EntradaService) CancelarEntrada(id int, usuarioID int) error {
 
@@ -84,6 +88,9 @@ func (service *EntradaService) TransferirEntrada(id int, usuarioID int, nuevoUsu
 	if entrada.UsuarioID != usuarioID {
 		return errors.New("no puede transferir esta entrada")
 	}
+	if entrada.Estado == "CANCELADA" {
+    return errors.New("no se puede transferir una entrada cancelada")
+}
 
 	return service.EntradaDAO.TransferirEntrada(id, nuevoUsuarioID)
 }

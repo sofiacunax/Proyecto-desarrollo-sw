@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"proyecto-desarrollo-sw/backend/db"
+	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
 )
 
@@ -57,6 +58,54 @@ func (dao *EntradaDAO) ObtenerPorUsuario(usuarioID int) ([]models.Entrada, error
 			&entrada.ID,
 			&entrada.UsuarioID,
 			&entrada.EventoID,
+			&entrada.Estado,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		entradas = append(entradas, entrada)
+	}
+
+	return entradas, nil
+}
+func (dao *EntradaDAO) ObtenerMisEntradasDTO(usuarioID int) ([]dtos.MisEntradaDTO, error) {
+
+	query := `
+		SELECT
+			e.id,
+			e.evento_id,
+			ev.titulo,
+			ev.fecha,
+			ev.ubicacion,
+			e.estado
+		FROM entradas e
+		INNER JOIN eventos ev
+			ON e.evento_id = ev.id
+		WHERE e.usuario_id = ?
+	`
+
+	rows, err := db.DB.Query(query, usuarioID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var entradas []dtos.MisEntradaDTO
+
+	for rows.Next() {
+
+		var entrada dtos.MisEntradaDTO
+
+		err := rows.Scan(
+			&entrada.ID,
+			&entrada.EventoID,
+			&entrada.Titulo,
+			&entrada.Fecha,
+			&entrada.Ubicacion,
 			&entrada.Estado,
 		)
 
