@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getEventos, getRankingEventos } from "../services/eventosService";
 import "../styles/Dashboard.css";
@@ -15,7 +15,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function cargarDatos() {
       try {
-        const eventosData = await getEventos();
+        const eventosData = await getEventos(busqueda);
         const rankingData = await getRankingEventos();
 
         setEventos(eventosData || []);
@@ -28,19 +28,9 @@ export default function Dashboard() {
     }
 
     cargarDatos();
-  }, []);
+  }, [busqueda]);
 
-  const eventosFiltrados = useMemo(() => {
-    return eventos.filter((evento) => {
-      const texto = `
-        ${evento.titulo || evento.Titulo || evento.nombre || evento.Nombre || ""}
-        ${evento.ubicacion || evento.Ubicacion || ""}
-        ${evento.categoria || evento.Categoria || ""}
-      `.toLowerCase();
-
-      return texto.includes(busqueda.toLowerCase());
-    });
-  }, [eventos, busqueda]);
+  const eventosFiltrados = eventos;
 
   const handleLogout = () => {
     localStorage.removeItem("token");

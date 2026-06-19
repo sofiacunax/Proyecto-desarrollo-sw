@@ -1,7 +1,9 @@
 const API_URL = "http://localhost:8080"
 
-export async function getEventos() {
-  const response = await fetch(`${API_URL}/eventos`)
+export async function getEventos(search = "") {
+  const response = await fetch(
+    `${API_URL}/eventos?search=${encodeURIComponent(search)}`
+  )
 
   if (!response.ok) {
     throw new Error("No se pudieron cargar los eventos")

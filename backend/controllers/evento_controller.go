@@ -38,7 +38,11 @@ func (controller *EventoController) CrearEvento(ctx *gin.Context) {
 }
 
 func (controller *EventoController) ObtenerEventos(ctx *gin.Context) {
-	eventos, err := controller.EventoService.ObtenerEventos()
+
+	busqueda := ctx.Query("search")
+
+	eventos, err := controller.EventoService.ObtenerEventos(busqueda)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error al obtener eventos"})
 		return

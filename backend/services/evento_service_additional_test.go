@@ -28,7 +28,7 @@ func TestEventoServiceConsultas(t *testing.T) {
 
 	t.Run("listar", func(t *testing.T) {
 		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}})
-		items, err := NewEventoService().ObtenerEventos()
+		items, err := NewEventoService().ObtenerEventos("")
 		if err != nil || len(items) != 1 {
 			t.Fatalf("resultado inesperado: %#v, %v", items, err)
 		}

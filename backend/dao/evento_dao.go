@@ -37,16 +37,44 @@ func (dao *EventoDAO) CrearEvento(evento models.Evento) error {
 	return err
 }
 
-func (dao *EventoDAO) ObtenerEventos() ([]models.Evento, error) {
-	query := `
-		SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
-		FROM eventos
-	`
+func (dao *EventoDAO) ObtenerEventos(busqueda string) ([]models.Evento, error) {
 
-	rows, err := db.DB.Query(query)
+	var rows *sql.Rows
+	var err error
+
+	if busqueda != "" {
+
+		query := `
+			SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
+			FROM eventos
+			WHERE titulo LIKE ?
+			OR ubicacion LIKE ?
+			OR categoria LIKE ?
+		`
+
+		filtro := "%" + busqueda + "%"
+
+		rows, err = db.DB.Query(
+			query,
+			filtro,
+			filtro,
+			filtro,
+		)
+
+	} else {
+
+		query := `
+			SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
+			FROM eventos
+		`
+
+		rows, err = db.DB.Query(query)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var eventos []models.Evento
@@ -74,10 +102,6 @@ func (dao *EventoDAO) ObtenerEventos() ([]models.Evento, error) {
 		}
 
 		eventos = append(eventos, evento)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
 	}
 
 	return eventos, nil
