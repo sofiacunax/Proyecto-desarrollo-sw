@@ -9,7 +9,7 @@ import (
 var SecretKey = []byte("mi_clave_super_secreta")
 
 func GenerateToken(
-	id uint,
+	id int,
 	email string,
 	rol string,
 ) (string, error) {

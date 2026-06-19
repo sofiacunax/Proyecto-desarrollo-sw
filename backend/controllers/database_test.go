@@ -10,6 +10,9 @@ import (
 	"testing"
 
 	"proyecto-desarrollo-sw/backend/db"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type controllerDBResult struct {
@@ -42,6 +45,11 @@ func (d controllerDriver) Open(string) (driver.Conn, error) {
 
 type controllerConn struct{ stub *controllerDBStub }
 
+type controllerResult struct{ rows int64 }
+
+func (r controllerResult) LastInsertId() (int64, error) { return 1, nil }
+func (r controllerResult) RowsAffected() (int64, error) { return r.rows, nil }
+
 func (c *controllerConn) Prepare(string) (driver.Stmt, error) {
 	return nil, errors.New("prepare no soportado")
 }
@@ -53,7 +61,7 @@ func (c *controllerConn) ExecContext(context.Context, string, []driver.NamedValu
 	if result.err != nil {
 		return nil, result.err
 	}
-	return driver.RowsAffected(1), nil
+	return controllerResult{rows: 1}, nil
 }
 func (c *controllerConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
 	result := c.stub.next()
@@ -89,8 +97,14 @@ func useControllerDB(t *testing.T, results ...controllerDBResult) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: connection, SkipInitializeWithVersion: true,
+	}), &gorm.Config{SkipDefaultTransaction: true, DisableAutomaticPing: true})
+	if err != nil {
+		t.Fatalf("no se pudo configurar GORM para la prueba: %v", err)
+	}
 	previous := db.DB
-	db.DB = connection
+	db.DB = gormDB
 	t.Cleanup(func() {
 		_ = connection.Close()
 		db.DB = previous

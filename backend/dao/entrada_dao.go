@@ -1,217 +1,77 @@
 package dao
 
 import (
-	"database/sql"
+	"errors"
 
 	"proyecto-desarrollo-sw/backend/db"
 	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
+
+	"gorm.io/gorm"
 )
 
 type EntradaDAO struct{}
 
-func NewEntradaDAO() *EntradaDAO {
-	return &EntradaDAO{}
-}
+func NewEntradaDAO() *EntradaDAO { return &EntradaDAO{} }
 
 func (dao *EntradaDAO) CrearEntrada(entrada models.Entrada) error {
-
-	query := `
-		INSERT INTO entradas
-		(usuario_id, evento_id, estado)
-		VALUES (?, ?, ?)
-	`
-
-	_, err := db.DB.Exec(
-		query,
-		entrada.UsuarioID,
-		entrada.EventoID,
-		entrada.Estado,
-	)
-
-	return err
+	return db.DB.Create(&entrada).Error
 }
 
 func (dao *EntradaDAO) ObtenerPorUsuario(usuarioID int) ([]models.Entrada, error) {
-
-	query := `
-		SELECT id, usuario_id, evento_id, estado
-		FROM entradas
-		WHERE usuario_id = ?
-	`
-
-	rows, err := db.DB.Query(query, usuarioID)
-
-	if err != nil {
+	var entradas []models.Entrada
+	if err := db.DB.Where("usuario_id = ?", usuarioID).Find(&entradas).Error; err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
-
-	var entradas []models.Entrada
-
-	for rows.Next() {
-
-		var entrada models.Entrada
-
-		err := rows.Scan(
-			&entrada.ID,
-			&entrada.UsuarioID,
-			&entrada.EventoID,
-			&entrada.Estado,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		entradas = append(entradas, entrada)
-	}
-
 	return entradas, nil
 }
+
 func (dao *EntradaDAO) ObtenerMisEntradasDTO(usuarioID int) ([]dtos.MisEntradaDTO, error) {
-
-	query := `
-		SELECT
-			e.id,
-			e.evento_id,
-			ev.titulo,
-			ev.fecha,
-			ev.ubicacion,
-			e.estado
-		FROM entradas e
-		INNER JOIN eventos ev
-			ON e.evento_id = ev.id
-		WHERE e.usuario_id = ?
-	`
-
-	rows, err := db.DB.Query(query, usuarioID)
-
+	var entradas []dtos.MisEntradaDTO
+	err := db.DB.Model(&models.Entrada{}).
+		Select("entradas.id, entradas.evento_id, eventos.titulo, eventos.fecha, eventos.ubicacion, entradas.estado").
+		Joins("JOIN eventos ON entradas.evento_id = eventos.id").
+		Where("entradas.usuario_id = ?", usuarioID).
+		Scan(&entradas).Error
 	if err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
-
-	var entradas []dtos.MisEntradaDTO
-
-	for rows.Next() {
-
-		var entrada dtos.MisEntradaDTO
-
-		err := rows.Scan(
-			&entrada.ID,
-			&entrada.EventoID,
-			&entrada.Titulo,
-			&entrada.Fecha,
-			&entrada.Ubicacion,
-			&entrada.Estado,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		entradas = append(entradas, entrada)
-	}
-
 	return entradas, nil
 }
 
 func (dao *EntradaDAO) ObtenerPorID(id int) (*models.Entrada, error) {
-
-	query := `
-		SELECT id, usuario_id, evento_id, estado
-		FROM entradas
-		WHERE id = ?
-	`
-
 	var entrada models.Entrada
-
-	err := db.DB.QueryRow(query, id).Scan(
-		&entrada.ID,
-		&entrada.UsuarioID,
-		&entrada.EventoID,
-		&entrada.Estado,
-	)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	if err != nil {
+	if err := db.DB.First(&entrada, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
-
 	return &entrada, nil
 }
 
 func (dao *EntradaDAO) CancelarEntrada(id int) error {
-
-	query := `
-		UPDATE entradas
-		SET estado = 'CANCELADA'
-		WHERE id = ?
-	`
-
-	_, err := db.DB.Exec(query, id)
-
-	return err
+	return db.DB.Model(&models.Entrada{}).Where("id = ?", id).
+		Update("estado", "CANCELADA").Error
 }
 
 func (dao *EntradaDAO) TransferirEntrada(id int, nuevoUsuarioID int) error {
-
-	query := `
-		UPDATE entradas
-		SET usuario_id = ?
-		WHERE id = ?
-	`
-
-	_, err := db.DB.Exec(
-		query,
-		nuevoUsuarioID,
-		id,
-	)
-
-	return err
+	return db.DB.Model(&models.Entrada{}).Where("id = ?", id).
+		Update("usuario_id", nuevoUsuarioID).Error
 }
 
 func (dao *EntradaDAO) ContarEntradasActivas(eventoID int) (int, error) {
-
-	query := `
-		SELECT COUNT(*)
-		FROM entradas
-		WHERE evento_id = ?
-		AND estado = 'ACTIVA'
-	`
-
-	var cantidad int
-
-	err := db.DB.QueryRow(query, eventoID).Scan(&cantidad)
-
-	if err != nil {
-		return 0, err
-	}
-
-	return cantidad, nil
+	var cantidad int64
+	err := db.DB.Model(&models.Entrada{}).
+		Where("evento_id = ? AND estado = ?", eventoID, "ACTIVA").
+		Count(&cantidad).Error
+	return int(cantidad), err
 }
 
 func (dao *EntradaDAO) ObtenerCapacidadEvento(eventoID int) (int, error) {
-
-	query := `
-		SELECT capacidad
-		FROM eventos
-		WHERE id = ?
-	`
-
-	var capacidad int
-
-	err := db.DB.QueryRow(query, eventoID).Scan(&capacidad)
-
-	if err != nil {
+	var evento models.Evento
+	if err := db.DB.Select("capacidad").First(&evento, eventoID).Error; err != nil {
 		return 0, err
 	}
-
-	return capacidad, nil
+	return evento.Capacidad, nil
 }

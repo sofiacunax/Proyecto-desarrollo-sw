@@ -10,6 +10,9 @@ import (
 	"testing"
 
 	"proyecto-desarrollo-sw/backend/db"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type databaseResult struct {
@@ -40,6 +43,11 @@ func (d stubDriver) Open(string) (driver.Conn, error) { return &stubConn{stub: d
 
 type stubConn struct{ stub *databaseStub }
 
+type stubResult struct{ rows int64 }
+
+func (r stubResult) LastInsertId() (int64, error) { return 1, nil }
+func (r stubResult) RowsAffected() (int64, error) { return r.rows, nil }
+
 func (c *stubConn) Prepare(string) (driver.Stmt, error) {
 	return nil, errors.New("prepare no soportado")
 }
@@ -52,7 +60,7 @@ func (c *stubConn) ExecContext(context.Context, string, []driver.NamedValue) (dr
 	if result.err != nil {
 		return nil, result.err
 	}
-	return driver.RowsAffected(1), nil
+	return stubResult{rows: 1}, nil
 }
 
 func (c *stubConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
@@ -89,8 +97,14 @@ func useDatabaseStub(t *testing.T, results ...databaseResult) {
 	if err != nil {
 		t.Fatalf("no se pudo abrir la base de datos de prueba: %v", err)
 	}
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: connection, SkipInitializeWithVersion: true,
+	}), &gorm.Config{SkipDefaultTransaction: true, DisableAutomaticPing: true})
+	if err != nil {
+		t.Fatalf("no se pudo configurar GORM para la prueba: %v", err)
+	}
 	previous := db.DB
-	db.DB = connection
+	db.DB = gormDB
 	t.Cleanup(func() {
 		_ = connection.Close()
 		db.DB = previous

@@ -34,6 +34,14 @@ func TestEventoServiceConsultas(t *testing.T) {
 		}
 	})
 
+	t.Run("buscar por texto", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}})
+		items, err := NewEventoService().ObtenerEventos("Recital")
+		if err != nil || len(items) != 1 || items[0].Titulo != "Recital" {
+			t.Fatalf("resultado de busqueda inesperado: %#v, %v", items, err)
+		}
+	})
+
 	t.Run("por id", func(t *testing.T) {
 		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}})
 		item, err := NewEventoService().ObtenerEventoPorID(1)

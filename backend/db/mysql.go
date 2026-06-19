@@ -1,31 +1,33 @@
 package db
 
 import (
-	"database/sql"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 func Connect() {
 	var err error
 
-	DB, err = sql.Open(
-		"mysql",
-		"root:SasukeKira2006.@tcp(localhost:3306)/proyecto_desarrollo_sw",
-	)
+	DB, err = gorm.Open(mysql.Open(
+		"root:SasukeKira2006.@tcp(localhost:3306)/proyecto_desarrollo_sw?charset=utf8mb4",
+	), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = DB.Ping()
-
-	if err != nil {
+	/*if err = DB.AutoMigrate(
+		&models.Usuario{},
+		&models.Evento{},
+		&models.Entrada{},
+		&models.Puntuacion{},
+	); err != nil {
 		log.Fatal(err)
-	}
+	}*/
 
-	log.Println("Conectado a MySQL")
+	log.Println("Conectado a MySQL y esquema migrado")
 }
