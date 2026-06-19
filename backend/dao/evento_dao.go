@@ -1,180 +1,60 @@
 package dao
 
 import (
-	"database/sql"
+	"errors"
+
 	"proyecto-desarrollo-sw/backend/db"
 	"proyecto-desarrollo-sw/backend/models"
+
+	"gorm.io/gorm"
 )
 
 type EventoDAO struct{}
 
-func NewEventoDAO() *EventoDAO {
-	return &EventoDAO{}
-}
+func NewEventoDAO() *EventoDAO { return &EventoDAO{} }
 
 func (dao *EventoDAO) CrearEvento(evento models.Evento) error {
-	query := `
-		INSERT INTO eventos 
-		(titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`
-
-	_, err := db.DB.Exec(
-		query,
-		evento.Titulo,
-		evento.Descripcion,
-		evento.Fecha,
-		evento.Horario,
-		evento.Duracion,
-		evento.Ubicacion,
-		evento.Capacidad,
-		evento.Precio,
-		evento.Categoria,
-		evento.ImagenURL,
-		evento.Estado,
-	)
-
-	return err
+	return db.DB.Create(&evento).Error
 }
 
 func (dao *EventoDAO) ObtenerEventos(busqueda string) ([]models.Evento, error) {
-
-	var rows *sql.Rows
-	var err error
-
+	var eventos []models.Evento
+	consulta := db.DB
 	if busqueda != "" {
-
-		query := `
-			SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
-			FROM eventos
-			WHERE titulo LIKE ?
-			OR ubicacion LIKE ?
-			OR categoria LIKE ?
-		`
-
 		filtro := "%" + busqueda + "%"
-
-		rows, err = db.DB.Query(
-			query,
-			filtro,
-			filtro,
-			filtro,
+		consulta = consulta.Where(
+			"titulo LIKE ? OR ubicacion LIKE ? OR categoria LIKE ?",
+			filtro, filtro, filtro,
 		)
-
-	} else {
-
-		query := `
-			SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
-			FROM eventos
-		`
-
-		rows, err = db.DB.Query(query)
 	}
-
-	if err != nil {
+	if err := consulta.Find(&eventos).Error; err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
-
-	var eventos []models.Evento
-
-	for rows.Next() {
-		var evento models.Evento
-
-		err := rows.Scan(
-			&evento.ID,
-			&evento.Titulo,
-			&evento.Descripcion,
-			&evento.Fecha,
-			&evento.Horario,
-			&evento.Duracion,
-			&evento.Ubicacion,
-			&evento.Capacidad,
-			&evento.Precio,
-			&evento.Categoria,
-			&evento.ImagenURL,
-			&evento.Estado,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		eventos = append(eventos, evento)
-	}
-
 	return eventos, nil
 }
 
 func (dao *EventoDAO) ObtenerEventoPorID(id int) (*models.Evento, error) {
-	query := `
-		SELECT id, titulo, descripcion, fecha, horario, duracion, ubicacion, capacidad, precio, categoria, imagen_url, estado
-		FROM eventos
-		WHERE id = ?
-	`
-
 	var evento models.Evento
-
-	err := db.DB.QueryRow(query, id).Scan(
-		&evento.ID,
-		&evento.Titulo,
-		&evento.Descripcion,
-		&evento.Fecha,
-		&evento.Horario,
-		&evento.Duracion,
-		&evento.Ubicacion,
-		&evento.Capacidad,
-		&evento.Precio,
-		&evento.Categoria,
-		&evento.ImagenURL,
-		&evento.Estado,
-	)
-
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-
-	if err != nil {
+	if err := db.DB.First(&evento, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
-
 	return &evento, nil
 }
 
 func (dao *EventoDAO) ActualizarEvento(id int, evento models.Evento) error {
-	query := `
-		UPDATE eventos
-		SET titulo = ?, descripcion = ?, fecha = ?, horario = ?, duracion = ?, ubicacion = ?, capacidad = ?, precio = ?, categoria = ?, imagen_url = ?, estado = ?
-		WHERE id = ?
-	`
-
-	_, err := db.DB.Exec(
-		query,
-		evento.Titulo,
-		evento.Descripcion,
-		evento.Fecha,
-		evento.Horario,
-		evento.Duracion,
-		evento.Ubicacion,
-		evento.Capacidad,
-		evento.Precio,
-		evento.Categoria,
-		evento.ImagenURL,
-		evento.Estado,
-		id,
-	)
-
-	return err
+	return db.DB.Model(&models.Evento{}).Where("id = ?", id).Updates(map[string]any{
+		"titulo": evento.Titulo, "descripcion": evento.Descripcion,
+		"fecha": evento.Fecha, "horario": evento.Horario,
+		"duracion": evento.Duracion, "ubicacion": evento.Ubicacion,
+		"capacidad": evento.Capacidad, "precio": evento.Precio,
+		"categoria": evento.Categoria, "imagen_url": evento.ImagenURL,
+		"estado": evento.Estado,
+	}).Error
 }
 
 func (dao *EventoDAO) EliminarEvento(id int) error {
-	query := `
-		DELETE FROM eventos
-		WHERE id = ?
-	`
-
-	_, err := db.DB.Exec(query, id)
-
-	return err
+	return db.DB.Delete(&models.Evento{}, id).Error
 }
