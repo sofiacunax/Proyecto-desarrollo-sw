@@ -64,8 +64,8 @@ func (service *EventoService) CrearEvento(request dtos.EventoDTO) error {
 	return service.EventoDAO.CrearEvento(evento)
 }
 
-func (service *EventoService) ObtenerEventos() ([]models.Evento, error) {
-	return service.EventoDAO.ObtenerEventos()
+func (service *EventoService) ObtenerEventos(busqueda string) ([]models.Evento, error) {
+	return service.EventoDAO.ObtenerEventos(busqueda)
 }
 
 func (service *EventoService) ObtenerEventoPorID(id int) (*models.Evento, error) {
