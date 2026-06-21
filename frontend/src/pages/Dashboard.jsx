@@ -323,7 +323,7 @@ function RankingCard({ evento, rank }) {
     )
   }
 >
-  Comprar
+  Ver detalle
 </button>
         </div>
       </div>
