@@ -10,7 +10,19 @@ export async function obtenerMisEntradas(token) {
     }
   )
 
-  return await response.json()
+  const data = await response.json()
+
+  if (response.status === 401) {
+    localStorage.removeItem("token")
+    window.location.href = "/"
+    throw new Error("Sesión expirada")
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || "Error al obtener entradas")
+  }
+
+  return data
 }
 
 export async function cancelarEntrada(id, token) {
@@ -24,7 +36,19 @@ export async function cancelarEntrada(id, token) {
     }
   )
 
-  return await response.json()
+  const data = await response.json()
+
+  if (response.status === 401) {
+    localStorage.removeItem("token")
+    window.location.href = "/"
+    throw new Error("Sesión expirada")
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || "Error al cancelar entrada")
+  }
+
+  return data
 }
 
 export async function transferirEntrada(
@@ -46,7 +70,19 @@ export async function transferirEntrada(
     }
   )
 
-  return await response.json()
+  const data = await response.json()
+
+  if (response.status === 401) {
+    localStorage.removeItem("token")
+    window.location.href = "/"
+    throw new Error("Sesión expirada")
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || "Error al transferir entrada")
+  }
+
+  return data
 }
 
 export async function comprarEntrada(
@@ -67,5 +103,18 @@ export async function comprarEntrada(
     }
   )
 
-  return await response.json()
+  const data = await response.json()
+
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
 }
+
+if (!response.ok) {
+  throw new Error(data.error || "Error al comprar entrada")
+}
+
+return data
+}
+

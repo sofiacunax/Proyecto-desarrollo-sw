@@ -20,9 +20,18 @@ export default function Dashboard() {
 
         setEventos(eventosData || []);
         setRanking(rankingData || []);
-      } catch {
-        setError("No se pudieron cargar los eventos");
-      } finally {
+      } catch (error) {
+  if (
+    error.message?.includes("401") ||
+    error.message?.includes("Unauthorized")
+  ) {
+    localStorage.removeItem("token");
+    navigate("/");
+    return;
+  }
+
+  setError("No se pudieron cargar los eventos");
+} finally {
         setLoading(false);
       }
     }
@@ -194,7 +203,9 @@ function EventCard({ evento }) {
             puntuacion: valor,
           }),
         },
+        
       );
+      
 
       const data = await response.json();
 
@@ -318,5 +329,7 @@ function RankingCard({ evento, rank }) {
       </div>
     </article>
   );
+
+  
 }
 
