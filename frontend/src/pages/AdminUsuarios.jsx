@@ -1,12 +1,61 @@
 import { useEffect, useState } from "react"
-import { getUsuarios } from "../services/usuariosService"
+import { useNavigate } from "react-router-dom"
+import {
+  getUsuarios,
+  cambiarRol,
+} from "../services/usuariosService"
+
 
 export default function AdminUsuarios() {
 
   const [usuarios, setUsuarios] = useState([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+ const handleCambiarRol = async (
+  usuario
+) => {
 
+  const nuevoRol =
+    usuario.rol === "ADMIN"
+      ? "CLIENTE"
+      : "ADMIN"
+
+  try {
+
+    const token =
+      localStorage.getItem("token")
+
+    await cambiarRol(
+      usuario.id,
+      nuevoRol,
+      token
+    )
+
+    setUsuarios(
+      usuarios.map((u) =>
+        u.id === usuario.id
+          ? {
+              ...u,
+              rol: nuevoRol,
+            }
+          : u
+      )
+    )
+
+    alert(
+      "Rol actualizado correctamente"
+    )
+
+  } catch (error) {
+
+    console.error(error)
+
+    alert(error.message)
+
+  }
+}
   useEffect(() => {
+   
 
     async function cargarUsuarios() {
 
@@ -41,9 +90,19 @@ export default function AdminUsuarios() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Administración de Usuarios</h1>
+  <h1>Administración de Usuarios</h1>
 
-      <table border="1" cellPadding="10">
+  <button
+    onClick={() =>
+      navigate("/admin/eventos")
+    }
+    style={{ marginBottom: "20px" }}
+  >
+    Volver a Eventos
+  </button>
+
+  <table>
+
 
         <thead>
           <tr>
@@ -51,6 +110,7 @@ export default function AdminUsuarios() {
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>
+            <th>Acción</th>
           </tr>
         </thead>
 
@@ -67,6 +127,16 @@ export default function AdminUsuarios() {
               <td>{usuario.email}</td>
 
               <td>{usuario.rol}</td>
+
+              <td>
+  <button
+    onClick={() =>
+      handleCambiarRol(usuario)
+    }
+  >
+    Cambiar Rol
+  </button>
+</td>
 
             </tr>
 

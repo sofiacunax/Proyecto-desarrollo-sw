@@ -68,6 +68,10 @@ func main() {
 		"/usuarios",
 		usuarioController.ObtenerUsuarios,
 	)
+	admin.PUT(
+		"/usuarios/:id/rol",
+		usuarioController.CambiarRol,
+	)
 
 	router.Run(":8080")
 }

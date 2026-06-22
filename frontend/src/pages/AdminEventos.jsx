@@ -65,15 +65,21 @@ export default function AdminEventos() {
       >
         Volver
       </button>
-      <button
+
+<button
+  style={{ marginLeft: "10px" }}
   onClick={() =>
     navigate("/admin/eventos/nuevo")
   }
 >
   + Nuevo Evento
 </button>
+
 <button
-  onClick={() => navigate("/admin/usuarios")}
+  style={{ marginLeft: "10px" }}
+  onClick={() =>
+    navigate("/admin/usuarios")
+  }
 >
   Administrar Usuarios
 </button>

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"proyecto-desarrollo-sw/backend/services"
 
@@ -29,4 +30,66 @@ func (controller *UsuarioController) ObtenerUsuarios(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, usuarios)
+}
+
+func (controller *UsuarioController) CambiarRol(
+	ctx *gin.Context,
+) {
+
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "id inválido",
+			},
+		)
+		return
+	}
+
+	var request struct {
+		Rol string `json:"rol"`
+	}
+
+	if err := ctx.ShouldBindJSON(
+		&request,
+	); err != nil {
+
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "datos inválidos",
+			},
+		)
+		return
+	}
+
+	err = controller.
+		UsuarioService.
+		CambiarRol(
+			id,
+			request.Rol,
+		)
+
+	if err != nil {
+
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		gin.H{
+			"message": "rol actualizado correctamente",
+		},
+	)
 }

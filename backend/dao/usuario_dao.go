@@ -34,3 +34,13 @@ func (d *UsuarioDAO) ObtenerUsuarios() ([]models.Usuario, error) {
 
 	return usuarios, err
 }
+
+func (d *UsuarioDAO) ActualizarRol(
+	id int,
+	rol string,
+) error {
+
+	return db.DB.Model(&models.Usuario{}).
+		Where("id = ?", id).
+		Update("rol", rol).Error
+}
