@@ -12,6 +12,22 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const token = localStorage.getItem("token")
+
+let esAdmin = false
+
+if (token) {
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1])
+    )
+
+    esAdmin = payload.rol === "ADMIN"
+  } catch {
+    esAdmin = false
+  }
+}
+
   useEffect(() => {
     async function cargarDatos() {
       try {
@@ -37,7 +53,7 @@ export default function Dashboard() {
     }
 
     cargarDatos();
-  }, [busqueda]);
+  }, [navigate]);
 
   const eventosFiltrados = eventos;
 
@@ -60,6 +76,11 @@ export default function Dashboard() {
           <span className="active">Eventos</span>
 
           <span onClick={() => navigate("/mis-entradas")}>Mis Entradas</span>
+          {esAdmin && (
+  <span onClick={() => navigate("/admin/eventos")}>
+    Administración
+  </span>
+)}
 
           <span>Sobre Nosotros</span>
         </div>

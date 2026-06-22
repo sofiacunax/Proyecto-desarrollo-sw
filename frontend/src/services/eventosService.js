@@ -28,3 +28,72 @@ export async function getEventoPorId(id) {
 
   return await response.json()
 }
+
+export async function eliminarEvento(id, token) {
+  const response = await fetch(
+    `${API_URL}/private/admin/eventos/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudo eliminar el evento")
+  }
+
+  return data
+}
+
+export async function crearEvento(
+  evento,
+  token
+) {
+  const response = await fetch(
+    `${API_URL}/private/admin/eventos`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(evento),
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || "No se pudo crear el evento"
+    )
+  }
+
+  return data
+}
+
+export async function actualizarEvento(id, evento, token) {
+  const response = await fetch(
+    `${API_URL}/private/admin/eventos/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(evento),
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudo actualizar")
+  }
+
+  return data
+}

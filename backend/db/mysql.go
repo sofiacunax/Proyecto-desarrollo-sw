@@ -2,7 +2,6 @@ package db
 
 import (
 	"log"
-	"proyecto-desarrollo-sw/backend/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -21,14 +20,14 @@ func Connect() {
 		log.Fatal(err)
 	}
 
-	if err = DB.AutoMigrate(
+	/*if err = DB.AutoMigrate(
 		&models.Usuario{},
 		&models.Evento{},
 		&models.Entrada{},
 		&models.Puntuacion{},
 	); err != nil {
 		log.Fatal(err)
-	}
+	}*/
 
 	log.Println("Conectado a MySQL y esquema migrado")
 }
