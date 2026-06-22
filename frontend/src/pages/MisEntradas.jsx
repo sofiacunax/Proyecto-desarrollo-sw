@@ -33,19 +33,21 @@ function MisEntradas() {
       alert("No se pudo cancelar la entrada");
     }
   };
-  const handleTransferir = async (id) => {
-  const nuevoUsuarioID = prompt(
-    "Ingrese el ID del usuario destino"
+const handleTransferir = async (id) => {
+
+  const emailDestino = prompt(
+    "Ingrese el email del usuario destino"
   )
 
-  if (!nuevoUsuarioID) return
+  if (!emailDestino) return
 
   try {
+
     const token = localStorage.getItem("token")
 
     const response = await transferirEntrada(
       id,
-      Number(nuevoUsuarioID),
+      emailDestino,
       token
     )
 
@@ -55,9 +57,16 @@ function MisEntradas() {
       await obtenerMisEntradas(token)
 
     setEntradas(entradasActualizadas || [])
+
   } catch (error) {
+
     console.error(error)
-    alert("No se pudo transferir la entrada")
+
+    alert(
+      error.message ||
+      "No se pudo transferir la entrada"
+    )
+
   }
 }
 

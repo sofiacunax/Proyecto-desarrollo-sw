@@ -11,12 +11,14 @@ import (
 type EntradaService struct {
 	EntradaDAO *dao.EntradaDAO
 	EventoDAO  *dao.EventoDAO
+	UsuarioDAO *dao.UsuarioDAO
 }
 
 func NewEntradaService() *EntradaService {
 	return &EntradaService{
 		EntradaDAO: dao.NewEntradaDAO(),
 		EventoDAO:  dao.NewEventoDAO(),
+		UsuarioDAO: dao.NewUsuarioDAO(),
 	}
 }
 
@@ -75,7 +77,11 @@ func (service *EntradaService) CancelarEntrada(id int, usuarioID int) error {
 	return service.EntradaDAO.CancelarEntrada(id)
 }
 
-func (service *EntradaService) TransferirEntrada(id int, usuarioID int, nuevoUsuarioID int) error {
+func (service *EntradaService) TransferirEntrada(
+	id int,
+	usuarioID int,
+	email string,
+) error {
 
 	entrada, err := service.EntradaDAO.ObtenerPorID(id)
 
@@ -90,11 +96,33 @@ func (service *EntradaService) TransferirEntrada(id int, usuarioID int, nuevoUsu
 	if entrada.UsuarioID != usuarioID {
 		return errors.New("no puede transferir esta entrada")
 	}
+
 	if entrada.Estado == "CANCELADA" {
-		return errors.New("no se puede transferir una entrada cancelada")
+		return errors.New(
+			"no se puede transferir una entrada cancelada",
+		)
 	}
 
-	return service.EntradaDAO.TransferirEntrada(id, nuevoUsuarioID)
+	usuarioDestino, err := service.
+		UsuarioDAO.
+		BuscarPorEmail(email)
+
+	if err != nil {
+		return errors.New(
+			"usuario destino no encontrado",
+		)
+	}
+
+	if usuarioDestino.ID == usuarioID {
+		return errors.New(
+			"no puede transferirse una entrada a sí mismo",
+		)
+	}
+
+	return service.EntradaDAO.TransferirEntrada(
+		id,
+		usuarioDestino.ID,
+	)
 }
 
 func (service *EntradaService) ObtenerReporteEvento(

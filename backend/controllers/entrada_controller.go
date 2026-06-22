@@ -125,7 +125,7 @@ func (controller *EntradaController) TransferirEntrada(ctx *gin.Context) {
 	err = controller.EntradaService.TransferirEntrada(
 		id,
 		userID,
-		request.NuevoUsuarioID,
+		request.Email,
 	)
 
 	if err != nil {
