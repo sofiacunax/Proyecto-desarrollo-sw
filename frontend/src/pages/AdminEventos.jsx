@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  getEventos,
-  eliminarEvento,
-} from "../services/eventosService";
+import { FiArrowLeft, FiCalendar, FiEdit2, FiPlus, FiTag, FiTrash2, FiUsers } from "react-icons/fi";
+import { getEventos, eliminarEvento } from "../services/eventosService";
+import "../styles/AdminEventos.css";
 
 export default function AdminEventos() {
   const navigate = useNavigate();
-
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,135 +20,86 @@ export default function AdminEventos() {
         setLoading(false);
       }
     }
-
     cargarEventos();
   }, []);
 
   const handleEliminar = async (id) => {
-  const confirmar = window.confirm(
-    "¿Seguro que desea eliminar este evento?"
-  )
+    const confirmar = window.confirm("¿Seguro que desea eliminar este evento?");
+    if (!confirmar) return;
 
-  if (!confirmar) {
-    return
-  }
-
-  try {
-    const token = localStorage.getItem("token")
-
-    await eliminarEvento(id, token)
-
-    setEventos(
-      eventos.filter(
-        (evento) =>
-          (evento.id || evento.ID) !== id
-      )
-    )
-
-    alert("Evento eliminado correctamente")
-  } catch (error) {
-    console.error(error)
-
-    alert(error.message)
-  }
-}
+    try {
+      const token = localStorage.getItem("token");
+      await eliminarEvento(id, token);
+      setEventos(eventos.filter((evento) => (evento.id || evento.ID) !== id));
+      alert("Evento eliminado correctamente");
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
+    }
+  };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Administración de Eventos</h1>
+    <main className="admin-events-page">
+      <div className="admin-events-container">
+        <header className="admin-events-header">
+          <div>
+            <span className="admin-eyebrow">Panel administrativo</span>
+            <h1>Administración de Eventos</h1>
+            <p>Gestioná todos los eventos publicados en Eventia</p>
+          </div>
+          <span className="events-count">{eventos.length} eventos</span>
+        </header>
 
-      <button
-        onClick={() => navigate("/dashboard")}
-        style={{ marginBottom: "20px" }}
-      >
-        Volver
-      </button>
+        <nav className="admin-actions" aria-label="Acciones de administración">
+          <button className="admin-btn admin-btn-secondary" onClick={() => navigate("/dashboard")}>
+            <FiArrowLeft aria-hidden="true" /> Volver al Dashboard
+          </button>
+          <button className="admin-btn admin-btn-primary" onClick={() => navigate("/admin/eventos/nuevo")}>
+            <FiPlus aria-hidden="true" /> Nuevo Evento
+          </button>
+          <button className="admin-btn admin-btn-secondary" onClick={() => navigate("/admin/usuarios")}>
+            <FiUsers aria-hidden="true" /> Administrar Usuarios
+          </button>
+        </nav>
 
-<button
-  style={{ marginLeft: "10px" }}
-  onClick={() =>
-    navigate("/admin/eventos/nuevo")
-  }
->
-  + Nuevo Evento
-</button>
-
-<button
-  style={{ marginLeft: "10px" }}
-  onClick={() =>
-    navigate("/admin/usuarios")
-  }
->
-  Administrar Usuarios
-</button>
-
-      {loading ? (
-        <p>Cargando eventos...</p>
-      ) : (
-        
-        <table border="1" cellPadding="10">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Título</th>
-              <th>Fecha</th>
-              <th>Categoría</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {eventos.map((evento) => (
-              <tr key={evento.id || evento.ID}>
-                <td>{evento.id || evento.ID}</td>
-
-                <td>
-                  {evento.titulo || evento.Titulo}
-                </td>
-
-                <td>
-                  {evento.fecha || evento.Fecha}
-                </td>
-
-                <td>
-                  {evento.categoria || evento.Categoria}
-                </td>
-
-                <td>
-                  {evento.estado || evento.Estado}
-                </td>
-                <td>
-
-<button
-  onClick={() =>
-    navigate(
-  `/admin/eventos/editar/${
-    evento.id || evento.ID
-  }`
-)
-  }
->
-  Editar
-</button>
-  <button
-  style={{
-    marginLeft: "10px",
-  }}
-  onClick={() =>
-    handleEliminar(
-      evento.id || evento.ID
-    )
-  }
->
-  Eliminar
-</button>
-</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+        {loading ? (
+          <div className="admin-feedback" role="status"><span className="admin-spinner" />Cargando eventos...</div>
+        ) : eventos.length === 0 ? (
+          <div className="admin-feedback admin-empty">
+            <FiCalendar aria-hidden="true" />
+            <h2>Todavía no hay eventos</h2>
+            <p>Creá el primero para comenzar a gestionarlo.</p>
+          </div>
+        ) : (
+          <section className="admin-events-grid" aria-label="Eventos publicados">
+            {eventos.map((evento) => {
+              const id = evento.id || evento.ID;
+              const estado = evento.estado || evento.Estado || "Sin estado";
+              return (
+                <article className="admin-event-card" key={id}>
+                  <div className="admin-event-card-top">
+                    <span className={`event-status event-status-${estado.toLowerCase()}`}>{estado}</span>
+                    <span className="event-id">#{id}</span>
+                  </div>
+                  <h2>{evento.titulo || evento.Titulo}</h2>
+                  <div className="admin-event-meta">
+                    <span><FiCalendar aria-hidden="true" />{evento.fecha || evento.Fecha}</span>
+                    <span><FiTag aria-hidden="true" />{evento.categoria || evento.Categoria}</span>
+                  </div>
+                  <div className="admin-event-card-actions">
+                    <button className="card-action edit-action" onClick={() => navigate(`/admin/eventos/editar/${id}`)}>
+                      <FiEdit2 aria-hidden="true" /> Editar
+                    </button>
+                    <button className="card-action delete-action" onClick={() => handleEliminar(id)}>
+                      <FiTrash2 aria-hidden="true" /> Eliminar
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </section>
+        )}
+      </div>
+    </main>
   );
 }
