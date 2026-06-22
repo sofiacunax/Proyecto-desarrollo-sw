@@ -53,6 +53,7 @@ func main() {
 	})
 
 	admin := private.Group("/admin")
+
 	admin.Use(utils.AdminMiddleware())
 
 	admin.POST("/eventos", eventoController.CrearEvento)
@@ -71,6 +72,10 @@ func main() {
 	admin.PUT(
 		"/usuarios/:id/rol",
 		usuarioController.CambiarRol,
+	)
+	admin.GET(
+		"/eventos/:id/reporte",
+		entradaController.ObtenerReporteEvento,
 	)
 
 	router.Run(":8080")

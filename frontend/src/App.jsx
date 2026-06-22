@@ -11,6 +11,8 @@ import AdminRoute from "./components/AdminRoute"
 import CrearEvento from "./pages/CrearEvento"
 import EditarEvento from "./pages/EditarEvento"
 import AdminUsuarios from "./pages/AdminUsuarios"
+import AdminReporteEvento
+  from "./pages/AdminReporteEvento"
 
 
 function App() {
@@ -32,6 +34,14 @@ function App() {
     <ProtectedRoute>
       <MisEntradas />
     </ProtectedRoute>
+  }
+/>
+<Route
+  path="/admin/eventos/:id/reporte"
+  element={
+    <AdminRoute>
+      <AdminReporteEvento />
+    </AdminRoute>
   }
 />
 <Route

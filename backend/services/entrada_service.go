@@ -10,11 +10,13 @@ import (
 
 type EntradaService struct {
 	EntradaDAO *dao.EntradaDAO
+	EventoDAO  *dao.EventoDAO
 }
 
 func NewEntradaService() *EntradaService {
 	return &EntradaService{
 		EntradaDAO: dao.NewEntradaDAO(),
+		EventoDAO:  dao.NewEventoDAO(),
 	}
 }
 
@@ -89,8 +91,58 @@ func (service *EntradaService) TransferirEntrada(id int, usuarioID int, nuevoUsu
 		return errors.New("no puede transferir esta entrada")
 	}
 	if entrada.Estado == "CANCELADA" {
-    return errors.New("no se puede transferir una entrada cancelada")
-}
+		return errors.New("no se puede transferir una entrada cancelada")
+	}
 
 	return service.EntradaDAO.TransferirEntrada(id, nuevoUsuarioID)
+}
+
+func (service *EntradaService) ObtenerReporteEvento(
+	eventoID int,
+) (*dtos.ReporteEventoDTO, error) {
+
+	evento, err := service.EventoDAO.
+		ObtenerEventoPorID(eventoID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if evento == nil {
+		return nil, errors.New(
+			"evento no encontrado",
+		)
+	}
+
+	vendidas, err := service.EntradaDAO.
+		ContarEntradasActivas(eventoID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	compradores, err := service.EntradaDAO.
+		ObtenerCompradoresPorEvento(eventoID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ocupacion float64
+
+	if evento.Capacidad > 0 {
+		ocupacion =
+			float64(vendidas) /
+				float64(evento.Capacidad) *
+				100
+	}
+
+	return &dtos.ReporteEventoDTO{
+		EventoID:          evento.ID,
+		Titulo:            evento.Titulo,
+		Capacidad:         evento.Capacidad,
+		EntradasVendidas:  vendidas,
+		PorcentajeOcupado: ocupacion,
+		Compradores:       compradores,
+	}, nil
 }

@@ -97,3 +97,24 @@ export async function actualizarEvento(id, evento, token) {
 
   return data
 }
+export async function getReporteEvento(
+  id,
+  token
+) {
+  const response = await fetch(
+    `http://localhost:8080/private/admin/eventos/${id}/reporte`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error(
+      "No se pudo obtener el reporte"
+    )
+  }
+
+  return response.json()
+}

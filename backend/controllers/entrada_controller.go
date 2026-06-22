@@ -139,3 +139,43 @@ func (controller *EntradaController) TransferirEntrada(ctx *gin.Context) {
 		"message": "Entrada transferida correctamente",
 	})
 }
+
+func (controller *EntradaController) ObtenerReporteEvento(
+	ctx *gin.Context,
+) {
+
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "id inválido",
+			},
+		)
+		return
+	}
+
+	reporte, err := controller.
+		EntradaService.
+		ObtenerReporteEvento(id)
+
+	if err != nil {
+
+		ctx.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": err.Error(),
+			},
+		)
+
+		return
+	}
+
+	ctx.JSON(
+		http.StatusOK,
+		reporte,
+	)
+}
