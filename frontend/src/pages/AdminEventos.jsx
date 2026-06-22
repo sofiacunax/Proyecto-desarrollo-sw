@@ -90,6 +90,20 @@ export default function AdminEventos() {
                     <button className="card-action edit-action" onClick={() => navigate(`/admin/eventos/editar/${id}`)}>
                       <FiEdit2 aria-hidden="true" /> Editar
                     </button>
+                    <button
+  style={{
+    marginLeft: "10px",
+  }}
+  onClick={() =>
+    navigate(
+      `/admin/eventos/${
+        evento.id || evento.ID
+      }/reporte`
+    )
+  }
+>
+  Reporte
+</button>
                     <button className="card-action delete-action" onClick={() => handleEliminar(id)}>
                       <FiTrash2 aria-hidden="true" /> Eliminar
                     </button>

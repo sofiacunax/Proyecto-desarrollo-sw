@@ -75,3 +75,28 @@ func (dao *EntradaDAO) ObtenerCapacidadEvento(eventoID int) (int, error) {
 	}
 	return evento.Capacidad, nil
 }
+
+func (dao *EntradaDAO) ObtenerCompradoresPorEvento(
+	eventoID int,
+) ([]dtos.CompradorDTO, error) {
+
+	var compradores []dtos.CompradorDTO
+
+	err := db.DB.
+		Table("entradas").
+		Select(
+			"usuarios.id, usuarios.nombre, usuarios.email",
+		).
+		Joins(
+			"JOIN usuarios ON entradas.usuario_id = usuarios.id",
+		).
+		Where(
+			"entradas.evento_id = ? AND entradas.estado = ?",
+			eventoID,
+			"ACTIVA",
+		).
+		Scan(&compradores).
+		Error
+
+	return compradores, err
+}
