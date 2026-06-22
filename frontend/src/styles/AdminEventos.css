@@ -29,6 +29,8 @@
 .card-action { flex: 1; min-height: 42px; border-radius: 11px; }
 .edit-action { background: #f3ecfa; color: #8b5fc7; }
 .edit-action:hover { background: #e7d8f5; }
+.report-action { background: #a97fd6; color: #fff; box-shadow: 0 6px 14px rgba(139,95,199,.16); }
+.report-action:hover { background: #8b5fc7; transform: translateY(-1px); box-shadow: 0 8px 18px rgba(139,95,199,.24); }
 .delete-action { background: #fff5f5; color: #c24141; }
 .delete-action:hover { background: #fee2e2; }
 .admin-feedback { display: flex; min-height: 260px; align-items: center; justify-content: center; gap: 12px; border: 1px solid #ececf2; border-radius: 20px; background: #fff; color: #6b7280; }
@@ -40,5 +42,5 @@
 @keyframes admin-spin { to { transform: rotate(360deg); } }
 .admin-btn:focus-visible, .card-action:focus-visible { outline: 3px solid rgba(169,127,214,.35); outline-offset: 2px; }
 @media (max-width: 720px) { .admin-events-container { width: min(100% - 28px, 1180px); padding: 38px 0 56px; } .admin-events-header { align-items: flex-start; flex-direction: column; } .admin-actions { padding: 12px; } .admin-btn { flex: 1 1 calc(50% - 6px); } .admin-events-grid { grid-template-columns: 1fr; } }
-@media (max-width: 480px) { .admin-btn { flex-basis: 100%; } .admin-event-card { padding: 20px; } }
+@media (max-width: 480px) { .admin-btn { flex-basis: 100%; } .admin-event-card { padding: 20px; } .admin-event-card-actions { flex-wrap: wrap; } .card-action { flex: 1 1 calc(50% - 5px); } .delete-action { flex-basis: 100%; } }
 @media (prefers-reduced-motion: reduce) { .admin-event-card, .admin-btn, .card-action { transition: none; } .admin-spinner { animation: none; } }

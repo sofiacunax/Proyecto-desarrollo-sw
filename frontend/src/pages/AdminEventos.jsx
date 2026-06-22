@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiCalendar, FiEdit2, FiPlus, FiTag, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiArrowLeft, FiBarChart2, FiCalendar, FiEdit2, FiPlus, FiTag, FiTrash2, FiUsers } from "react-icons/fi";
 import { getEventos, eliminarEvento } from "../services/eventosService";
 import "../styles/AdminEventos.css";
 
@@ -90,20 +90,9 @@ export default function AdminEventos() {
                     <button className="card-action edit-action" onClick={() => navigate(`/admin/eventos/editar/${id}`)}>
                       <FiEdit2 aria-hidden="true" /> Editar
                     </button>
-                    <button
-  style={{
-    marginLeft: "10px",
-  }}
-  onClick={() =>
-    navigate(
-      `/admin/eventos/${
-        evento.id || evento.ID
-      }/reporte`
-    )
-  }
->
-  Reporte
-</button>
+                    <button className="card-action report-action" onClick={() => navigate(`/admin/eventos/${id}/reporte`)}>
+                      <FiBarChart2 aria-hidden="true" /> Reporte
+                    </button>
                     <button className="card-action delete-action" onClick={() => handleEliminar(id)}>
                       <FiTrash2 aria-hidden="true" /> Eliminar
                     </button>
