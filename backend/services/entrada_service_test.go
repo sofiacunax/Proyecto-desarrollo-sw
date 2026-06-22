@@ -96,7 +96,11 @@ func TestEntradaServiceTransferirEntrada(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			useDatabaseStub(t, test.results...)
-			err := NewEntradaService().TransferirEntrada(1, 5, 8)
+			err := NewEntradaService().TransferirEntrada(
+				1,
+				5,
+				"anna@test.com",
+			)
 			assertServiceError(t, err, test.wantErr)
 		})
 	}

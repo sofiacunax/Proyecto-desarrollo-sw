@@ -53,7 +53,7 @@ export async function cancelarEntrada(id, token) {
 
 export async function transferirEntrada(
   id,
-  nuevoUsuarioID,
+  email,
   token
 ) {
   const response = await fetch(
@@ -65,8 +65,8 @@ export async function transferirEntrada(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        nuevo_usuario_id: nuevoUsuarioID,
-      }),
+  email: email
+}),
     }
   )
 
