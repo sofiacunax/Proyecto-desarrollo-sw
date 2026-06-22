@@ -25,6 +25,8 @@ func main() {
 	eventoController := controllers.NewEventoController()
 	puntuacionController := controllers.NewPuntuacionController()
 	entradaController := controllers.NewEntradaController()
+	usuarioController :=
+		controllers.NewUsuarioController()
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
@@ -62,6 +64,10 @@ func main() {
 			"message": "solo admin",
 		})
 	})
+	admin.GET(
+		"/usuarios",
+		usuarioController.ObtenerUsuarios,
+	)
 
 	router.Run(":8080")
 }
