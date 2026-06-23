@@ -91,7 +91,19 @@ func TestEntradaServiceTransferirEntrada(t *testing.T) {
 		{name: "inexistente", results: []databaseResult{{columns: []string{"id", "usuario_id", "evento_id", "estado"}}}, wantErr: "entrada no encontrada"},
 		{name: "otro propietario", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 9, Estado: "ACTIVA"})}, wantErr: "no puede transferir"},
 		{name: "cancelada", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "CANCELADA"})}, wantErr: "cancelada"},
-		{name: "exitosa", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}), {}}},
+		{name: "email inexistente", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			{columns: []string{"id", "nombre", "email", "password_hash", "rol"}},
+		}, wantErr: "usuario destino no encontrado"},
+		{name: "mismo usuario", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 5, Nombre: "Ana", Email: "anna@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+		}, wantErr: "mismo"},
+		{name: "exitosa", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 8, Nombre: "Bruno", Email: "bruno@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+			{},
+		}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -110,6 +122,13 @@ func entradaResult(item models.Entrada) databaseResult {
 	return databaseResult{
 		columns: []string{"id", "usuario_id", "evento_id", "estado"},
 		rows:    [][]driver.Value{{int64(item.ID), int64(item.UsuarioID), int64(item.EventoID), item.Estado}},
+	}
+}
+
+func usuarioResult(item models.Usuario) databaseResult {
+	return databaseResult{
+		columns: []string{"id", "nombre", "email", "password_hash", "rol"},
+		rows:    [][]driver.Value{{int64(item.ID), item.Nombre, item.Email, item.PasswordHash, item.Rol}},
 	}
 }
 

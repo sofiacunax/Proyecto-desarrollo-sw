@@ -197,9 +197,10 @@ func TestEntradaController(t *testing.T) {
 	t.Run("transferir exitoso", func(t *testing.T) {
 		useControllerDB(t,
 			controllerDBResult{columns: []string{"id", "usuario_id", "evento_id", "estado"}, rows: [][]driver.Value{{int64(1), int64(1), int64(2), "ACTIVA"}}},
+			controllerDBResult{columns: []string{"id", "nombre", "email", "password_hash", "rol"}, rows: [][]driver.Value{{int64(3), "Bruno", "bruno@example.com", "hash", "CLIENTE"}}},
 			controllerDBResult{},
 		)
-		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", `{"nuevo_usuario_id":3}`, controller.TransferirEntrada, float64(1)), http.StatusOK)
+		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", `{"email":"bruno@example.com"}`, controller.TransferirEntrada, float64(1)), http.StatusOK)
 	})
 }
 
@@ -236,5 +237,65 @@ func TestPuntuacionController(t *testing.T) {
 	t.Run("ranking exitoso", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: []string{"evento_id", "titulo", "promedio"}, rows: [][]driver.Value{{int64(3), "Recital", 4.5}}})
 		assertStatus(t, performRequest(http.MethodGet, "/ranking", "", controller.ObtenerRankingEventos, nil), http.StatusOK)
+	})
+}
+
+func TestUsuarioController(t *testing.T) {
+	controller := NewUsuarioController()
+
+	t.Run("obtener usuarios exitoso", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{
+			columns: []string{"id", "nombre", "email", "password_hash", "rol"},
+			rows:    [][]driver.Value{{int64(1), "Ana", "ana@example.com", "hash", "CLIENTE"}},
+		})
+		assertStatus(t, performRequest(http.MethodGet, "/usuarios", "", controller.ObtenerUsuarios, nil), http.StatusOK)
+	})
+
+	t.Run("obtener usuarios error", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo usuarios")})
+		assertStatus(t, performRequest(http.MethodGet, "/usuarios", "", controller.ObtenerUsuarios, nil), http.StatusInternalServerError)
+	})
+
+	t.Run("cambiar rol id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/usuarios/x", "/usuarios/:id", `{"rol":"ADMIN"}`, controller.CambiarRol, nil), http.StatusBadRequest)
+	})
+
+	t.Run("cambiar rol json invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/usuarios/1", "/usuarios/:id", "{", controller.CambiarRol, nil), http.StatusBadRequest)
+	})
+
+	t.Run("cambiar rol invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/usuarios/1", "/usuarios/:id", `{"rol":"ROOT"}`, controller.CambiarRol, nil), http.StatusBadRequest)
+	})
+
+	t.Run("cambiar rol exitoso", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{})
+		assertStatus(t, requestWithParam(http.MethodPut, "/usuarios/1", "/usuarios/:id", `{"rol":"ADMIN"}`, controller.CambiarRol, nil), http.StatusOK)
+	})
+}
+
+func TestReporteEventoController(t *testing.T) {
+	controller := NewEntradaController()
+
+	t.Run("id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/x/reporte", "/eventos/:id/reporte", "", controller.ObtenerReporteEvento, nil), http.StatusBadRequest)
+	})
+
+	t.Run("evento inexistente", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns()})
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/99/reporte", "/eventos/:id/reporte", "", controller.ObtenerReporteEvento, nil), http.StatusBadRequest)
+	})
+
+	t.Run("exitoso con compradores", func(t *testing.T) {
+		useControllerDB(t,
+			controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}},
+			controllerDBResult{columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}},
+			controllerDBResult{columns: []string{"id", "nombre", "email"}, rows: [][]driver.Value{{int64(2), "Ana", "ana@example.com"}}},
+		)
+		response := requestWithParam(http.MethodGet, "/eventos/1/reporte", "/eventos/:id/reporte", "", controller.ObtenerReporteEvento, nil)
+		assertStatus(t, response, http.StatusOK)
+		if !strings.Contains(response.Body.String(), `"porcentaje_ocupado":1`) {
+			t.Fatalf("body de reporte inesperado: %s", response.Body.String())
+		}
 	})
 }
