@@ -211,28 +211,28 @@ go tool cover -func=coverage.out
 
 ## Login
 
-![Login](docs/login.png)
+![Login](login.png)
 
 ## Dashboard
 
-![Dashboard](docs/dashboard1.png)
-![Dashboard](docs/dashboard2.png)
+![Dashboard](dashboard1.png)
+![Dashboard](dashboard2.png)
 
 ## Compra de Entradas
 
-![Compra](docs/compra-entrada.png)
+![Compra](compra-entrada.png)
 
 ## Mis Entradas
 
-![Mis Entradas](docs/mis-entradas.png)
+![Mis Entradas](mis-entradas.png)
 
 ## Transferencia de Entradas
 
-![Transferencia](docs/transferencia-entrada.png)
+![Transferencia](transferencia-entrada.png)
 
 ## Ranking de Eventos
 
-![Ranking](docs/ranking-eventos.png)
+![Ranking](ranking-eventos.png)
 
 
 
@@ -242,7 +242,7 @@ go tool cover -func=coverage.out
 
 El siguiente diagrama representa las entidades principales del sistema y sus relaciones.
 
-![DER](docs/der.png)
+![DER](der.png)
 
 ---
 
