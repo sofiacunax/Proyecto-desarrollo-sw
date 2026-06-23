@@ -189,7 +189,12 @@ function EventCard({ evento }) {
     evento.Nombre ||
     "Evento";
   const descripcion = evento.descripcion || evento.Descripcion || "";
-  const fecha = evento.fecha || evento.Fecha || "";
+  const fecha =
+  evento.fecha || evento.Fecha
+    ? new Date(
+        evento.fecha || evento.Fecha
+      ).toLocaleDateString("es-AR")
+    : "";
   const horario = evento.horario || evento.Horario || "";
   const ubicacion = evento.ubicacion || evento.Ubicacion || "";
   const categoria = evento.categoria || evento.Categoria || "Evento";
