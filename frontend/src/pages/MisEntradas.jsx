@@ -138,7 +138,11 @@ const handleTransferir = async (id) => {
                 <div key={entrada.id} className="ticket-card">
                   <h3>{entrada.titulo}</h3>
 
-                  <p>📅 {entrada.fecha}</p>
+                  <p>
+  📅 {new Date(
+    entrada.fecha
+  ).toLocaleDateString("es-AR")}
+</p>
 
                   <p>📍 {entrada.ubicacion}</p>
 

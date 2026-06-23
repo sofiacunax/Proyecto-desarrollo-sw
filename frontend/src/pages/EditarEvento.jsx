@@ -24,7 +24,14 @@ export default function EditarEvento() {
         const evento = await getEventoPorId(id);
         setTitulo(evento.titulo || evento.Titulo || "");
         setDescripcion(evento.descripcion || evento.Descripcion || "");
-        setFecha(evento.fecha || evento.Fecha || "");
+        const fechaEvento =
+  evento.fecha || evento.Fecha || "";
+
+setFecha(
+  fechaEvento
+    ? fechaEvento.split("T")[0]
+    : ""
+);
         setHorario(evento.horario || evento.Horario || "");
         setDuracion(evento.duracion || evento.Duracion || "");
         setUbicacion(evento.ubicacion || evento.Ubicacion || "");

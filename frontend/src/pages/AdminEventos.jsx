@@ -83,7 +83,12 @@ export default function AdminEventos() {
                   </div>
                   <h2>{evento.titulo || evento.Titulo}</h2>
                   <div className="admin-event-meta">
-                    <span><FiCalendar aria-hidden="true" />{evento.fecha || evento.Fecha}</span>
+                    <span>
+  <FiCalendar aria-hidden="true" />
+  {new Date(
+    evento.fecha || evento.Fecha
+  ).toLocaleDateString("es-AR")}
+</span>
                     <span><FiTag aria-hidden="true" />{evento.categoria || evento.Categoria}</span>
                   </div>
                   <div className="admin-event-card-actions">

@@ -11,6 +11,11 @@ export async function obtenerMisEntradas(token) {
   )
 
   const data = await response.json()
+  if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
 
   if (response.status === 401) {
     localStorage.removeItem("token")
@@ -37,6 +42,11 @@ export async function cancelarEntrada(id, token) {
   )
 
   const data = await response.json()
+  if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
 
   if (response.status === 401) {
     localStorage.removeItem("token")
@@ -71,6 +81,11 @@ export async function transferirEntrada(
   )
 
   const data = await response.json()
+  if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
 
   if (response.status === 401) {
     localStorage.removeItem("token")
@@ -104,6 +119,11 @@ export async function comprarEntrada(
   )
 
   const data = await response.json()
+  if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
 
 if (response.status === 401) {
   localStorage.removeItem("token")
