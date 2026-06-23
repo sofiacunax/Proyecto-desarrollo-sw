@@ -9,7 +9,11 @@ export async function getUsuarios(token) {
       },
     }
   )
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error("No se pudieron cargar los usuarios")
   }
@@ -37,6 +41,11 @@ export async function cambiarRol(
   )
 
   const data = await response.json()
+  if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
 
   if (!response.ok) {
     throw new Error(

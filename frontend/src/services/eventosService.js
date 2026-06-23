@@ -4,7 +4,11 @@ export async function getEventos(search = "") {
   const response = await fetch(
     `${API_URL}/eventos?search=${encodeURIComponent(search)}`
   )
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error("No se pudieron cargar los eventos")
   }
@@ -14,7 +18,11 @@ export async function getEventos(search = "") {
 
 export async function getRankingEventos() {
   const response = await fetch(`${API_URL}/eventos/ranking`)
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error("No se pudo cargar el ranking")
   }
@@ -41,7 +49,11 @@ export async function eliminarEvento(id, token) {
   )
 
   const data = await response.json()
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(data.error || "No se pudo eliminar el evento")
   }
@@ -66,7 +78,11 @@ export async function crearEvento(
   )
 
   const data = await response.json()
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(
       data.error || "No se pudo crear el evento"
@@ -90,7 +106,11 @@ export async function actualizarEvento(id, evento, token) {
   )
 
   const data = await response.json()
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(data.error || "No se pudo actualizar")
   }
@@ -109,7 +129,11 @@ export async function getReporteEvento(
       },
     }
   )
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(
       "No se pudo obtener el reporte"
