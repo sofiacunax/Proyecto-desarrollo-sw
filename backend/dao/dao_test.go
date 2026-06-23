@@ -51,6 +51,15 @@ func TestEventoDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("obtener por id error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo obtener")})
+		evento, err := dao.ObtenerEventoPorID(99)
+		assertDAOError(t, err, "fallo obtener")
+		if evento != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", evento)
+		}
+	})
+
 	t.Run("actualizar exitoso", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{})
 		if err := dao.ActualizarEvento(1, models.Evento{Titulo: "Nuevo", Estado: "ACTIVO"}); err != nil {
@@ -58,11 +67,21 @@ func TestEventoDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("actualizar error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo update")})
+		assertDAOError(t, dao.ActualizarEvento(1, models.Evento{Titulo: "Nuevo"}), "fallo update")
+	})
+
 	t.Run("eliminar exitoso", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{})
 		if err := dao.EliminarEvento(1); err != nil {
 			t.Fatalf("error inesperado: %v", err)
 		}
+	})
+
+	t.Run("eliminar error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo delete")})
+		assertDAOError(t, dao.EliminarEvento(1), "fallo delete")
 	})
 }
 
@@ -84,6 +103,15 @@ func TestEntradaDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("obtener por usuario error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo usuario")})
+		entradas, err := dao.ObtenerPorUsuario(1)
+		assertDAOError(t, err, "fallo usuario")
+		if entradas != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", entradas)
+		}
+	})
+
 	t.Run("obtener mis entradas dto", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{
 			columns: []string{"id", "evento_id", "titulo", "fecha", "ubicacion", "estado"},
@@ -95,11 +123,40 @@ func TestEntradaDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("obtener mis entradas dto error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo dto")})
+		entradas, err := dao.ObtenerMisEntradasDTO(1)
+		assertDAOError(t, err, "fallo dto")
+		if entradas != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", entradas)
+		}
+	})
+
 	t.Run("obtener por id inexistente", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{columns: entradaDAOColumns()})
 		entrada, err := dao.ObtenerPorID(99)
 		if err != nil || entrada != nil {
 			t.Fatalf("resultado inesperado: %#v, %v", entrada, err)
+		}
+	})
+
+	t.Run("obtener por id exitoso", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{
+			columns: entradaDAOColumns(),
+			rows:    [][]driver.Value{{int64(1), int64(2), int64(3), "ACTIVA"}},
+		})
+		entrada, err := dao.ObtenerPorID(1)
+		if err != nil || entrada == nil || entrada.ID != 1 {
+			t.Fatalf("resultado inesperado: %#v, %v", entrada, err)
+		}
+	})
+
+	t.Run("obtener por id error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo entrada")})
+		entrada, err := dao.ObtenerPorID(99)
+		assertDAOError(t, err, "fallo entrada")
+		if entrada != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", entrada)
 		}
 	})
 
@@ -125,6 +182,15 @@ func TestEntradaDAO(t *testing.T) {
 		capacidad, err := dao.ObtenerCapacidadEvento(2)
 		if err != nil || capacidad != 10 {
 			t.Fatalf("capacidad inesperada: %d, %v", capacidad, err)
+		}
+	})
+
+	t.Run("capacidad error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo capacidad")})
+		capacidad, err := dao.ObtenerCapacidadEvento(2)
+		assertDAOError(t, err, "fallo capacidad")
+		if capacidad != 0 {
+			t.Fatalf("se esperaba capacidad cero ante error, obtenido %d", capacidad)
 		}
 	})
 
@@ -158,6 +224,15 @@ func TestPuntuacionDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("listar por evento error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo listar")})
+		puntuaciones, err := dao.ObtenerPuntuacionesPorEvento(2)
+		assertDAOError(t, err, "fallo listar")
+		if puntuaciones != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", puntuaciones)
+		}
+	})
+
 	t.Run("promedio", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{columns: []string{"promedio"}, rows: [][]driver.Value{{4.5}}})
 		promedio, err := dao.ObtenerPromedioPorEvento(2)
@@ -171,6 +246,15 @@ func TestPuntuacionDAO(t *testing.T) {
 		ranking, err := dao.ObtenerRankingEventos()
 		if err != nil || len(ranking) != 1 || ranking[0].Titulo != "Recital" {
 			t.Fatalf("ranking inesperado: %#v, %v", ranking, err)
+		}
+	})
+
+	t.Run("ranking error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo ranking")})
+		ranking, err := dao.ObtenerRankingEventos()
+		assertDAOError(t, err, "fallo ranking")
+		if ranking != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", ranking)
 		}
 	})
 }
@@ -190,6 +274,15 @@ func TestUsuarioDAO(t *testing.T) {
 		usuario, err := dao.BuscarPorEmail("ana@example.com")
 		if err != nil || usuario == nil || usuario.Email != "ana@example.com" {
 			t.Fatalf("usuario inesperado: %#v, %v", usuario, err)
+		}
+	})
+
+	t.Run("buscar por email error", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{err: errors.New("fallo buscar")})
+		usuario, err := dao.BuscarPorEmail("ana@example.com")
+		assertDAOError(t, err, "fallo buscar")
+		if usuario != nil {
+			t.Fatalf("se esperaba nil, obtenido %#v", usuario)
 		}
 	})
 

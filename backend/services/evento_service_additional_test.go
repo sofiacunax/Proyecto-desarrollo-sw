@@ -22,6 +22,15 @@ func TestEventoServiceCrearEventoExitoso(t *testing.T) {
 	}
 }
 
+func TestEventoServiceCrearEventoConEstadoExplicito(t *testing.T) {
+	useDatabaseStub(t, databaseResult{})
+	request := validEventoRequest()
+	request.Estado = "CANCELADO"
+	if err := NewEventoService().CrearEvento(request); err != nil {
+		t.Fatalf("error inesperado: %v", err)
+	}
+}
+
 func TestEventoServiceConsultas(t *testing.T) {
 	columns := []string{"id", "titulo", "descripcion", "fecha", "horario", "duracion", "ubicacion", "capacidad", "precio", "categoria", "imagen_url", "estado"}
 	row := []driver.Value{int64(1), "Recital", "Musica", "2026-01-01", "20:00", int64(120), "Cordoba", int64(100), 1500.0, "Musica", "img", "ACTIVO"}
@@ -96,6 +105,15 @@ func TestEventoServiceActualizarEvento(t *testing.T) {
 			t.Fatalf("error inesperado: %v", err)
 		}
 	})
+
+	t.Run("exitosa con estado explicito", func(t *testing.T) {
+		request := validEventoRequest()
+		request.Estado = "CANCELADO"
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}}, databaseResult{})
+		if err := NewEventoService().ActualizarEvento(1, request); err != nil {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
 }
 
 func TestEventoServiceEliminarEvento(t *testing.T) {
@@ -113,6 +131,23 @@ func TestEventoServiceEliminarEvento(t *testing.T) {
 		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}}, databaseResult{})
 		if err := NewEventoService().EliminarEvento(1); err != nil {
 			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+
+	t.Run("error consulta", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{err: errors.New("fallo consulta")})
+		if err := NewEventoService().EliminarEvento(1); err == nil {
+			t.Fatal("se esperaba error de consulta")
+		}
+	})
+
+	t.Run("error eliminacion", func(t *testing.T) {
+		useDatabaseStub(t,
+			databaseResult{columns: columns, rows: [][]driver.Value{row}},
+			databaseResult{err: errors.New("fallo eliminacion")},
+		)
+		if err := NewEventoService().EliminarEvento(1); err == nil {
+			t.Fatal("se esperaba error de eliminacion")
 		}
 	})
 }

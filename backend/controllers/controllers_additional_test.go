@@ -126,9 +126,27 @@ func TestEventoControllerCaminosPrincipales(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: eventoColumns()})
 		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/1", "/eventos/:id", "", controller.ObtenerEventoPorID, nil), http.StatusNotFound)
 	})
+	t.Run("detalle error interno", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo detalle")})
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/1", "/eventos/:id", "", controller.ObtenerEventoPorID, nil), http.StatusInternalServerError)
+	})
+	t.Run("actualizar id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/x", "/eventos/:id", eventoJSON(), controller.ActualizarEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("actualizar json invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1", "/eventos/:id", "{", controller.ActualizarEvento, nil), http.StatusBadRequest)
+	})
 	t.Run("actualizar no encontrado", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: eventoColumns()})
 		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1", "/eventos/:id", eventoJSON(), controller.ActualizarEvento, nil), http.StatusNotFound)
+	})
+	t.Run("actualizar validacion", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}})
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1", "/eventos/:id", `{"titulo":"","fecha":"2026-01-01","horario":"20:00","ubicacion":"Cordoba","capacidad":100,"precio":1000}`, controller.ActualizarEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("actualizar error dao", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo consulta")})
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1", "/eventos/:id", eventoJSON(), controller.ActualizarEvento, nil), http.StatusBadRequest)
 	})
 	t.Run("actualizar exitoso", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
@@ -137,6 +155,14 @@ func TestEventoControllerCaminosPrincipales(t *testing.T) {
 	t.Run("eliminar no encontrado", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: eventoColumns()})
 		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusNotFound)
+	})
+	t.Run("eliminar error consulta", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo consulta")})
+		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusInternalServerError)
+	})
+	t.Run("eliminar error dao", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{err: errors.New("fallo delete")})
+		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusInternalServerError)
 	})
 	t.Run("eliminar exitoso", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
@@ -181,8 +207,16 @@ func TestEntradaController(t *testing.T) {
 		})
 		assertStatus(t, performRequest(http.MethodGet, "/entradas", "", controller.ObtenerMisEntradas, float64(1)), http.StatusOK)
 	})
+	t.Run("mis entradas error dao", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo entradas")})
+		assertStatus(t, performRequest(http.MethodGet, "/entradas", "", controller.ObtenerMisEntradas, float64(1)), http.StatusInternalServerError)
+	})
 	t.Run("cancelar id invalido", func(t *testing.T) {
 		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/x", "/entradas/:id", "", controller.CancelarEntrada, float64(1)), http.StatusBadRequest)
+	})
+	t.Run("cancelar no encontrada", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: []string{"id", "usuario_id", "evento_id", "estado"}})
+		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", "", controller.CancelarEntrada, float64(1)), http.StatusBadRequest)
 	})
 	t.Run("cancelar exitoso", func(t *testing.T) {
 		useControllerDB(t,
@@ -191,8 +225,18 @@ func TestEntradaController(t *testing.T) {
 		)
 		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", "", controller.CancelarEntrada, float64(1)), http.StatusOK)
 	})
+	t.Run("transferir id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/x", "/entradas/:id", `{"email":"bruno@example.com"}`, controller.TransferirEntrada, float64(1)), http.StatusBadRequest)
+	})
 	t.Run("transferir json invalido", func(t *testing.T) {
 		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", "{", controller.TransferirEntrada, float64(1)), http.StatusBadRequest)
+	})
+	t.Run("transferir email inexistente", func(t *testing.T) {
+		useControllerDB(t,
+			controllerDBResult{columns: []string{"id", "usuario_id", "evento_id", "estado"}, rows: [][]driver.Value{{int64(1), int64(1), int64(2), "ACTIVA"}}},
+			controllerDBResult{columns: []string{"id", "nombre", "email", "password_hash", "rol"}},
+		)
+		assertStatus(t, requestWithParam(http.MethodPut, "/entradas/1", "/entradas/:id", `{"email":"nadie@example.com"}`, controller.TransferirEntrada, float64(1)), http.StatusBadRequest)
 	})
 	t.Run("transferir exitoso", func(t *testing.T) {
 		useControllerDB(t,
@@ -230,9 +274,24 @@ func TestPuntuacionController(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: []string{"id", "usuario_id", "evento_id", "puntuacion"}, rows: [][]driver.Value{{int64(1), int64(2), int64(3), int64(5)}}})
 		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/3/puntuaciones", "/eventos/:id/puntuaciones", "", controller.ObtenerPuntuacionesPorEvento, nil), http.StatusOK)
 	})
+	t.Run("listar error", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo puntuaciones")})
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/3/puntuaciones", "/eventos/:id/puntuaciones", "", controller.ObtenerPuntuacionesPorEvento, nil), http.StatusInternalServerError)
+	})
+	t.Run("promedio id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/x/promedio", "/eventos/:id/promedio", "", controller.ObtenerPromedioPorEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("promedio error", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo promedio")})
+		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/3/promedio", "/eventos/:id/promedio", "", controller.ObtenerPromedioPorEvento, nil), http.StatusInternalServerError)
+	})
 	t.Run("promedio exitoso", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: []string{"promedio"}, rows: [][]driver.Value{{4.5}}})
 		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/3/promedio", "/eventos/:id/promedio", "", controller.ObtenerPromedioPorEvento, nil), http.StatusOK)
+	})
+	t.Run("ranking error", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{err: errors.New("fallo ranking")})
+		assertStatus(t, performRequest(http.MethodGet, "/ranking", "", controller.ObtenerRankingEventos, nil), http.StatusInternalServerError)
 	})
 	t.Run("ranking exitoso", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{columns: []string{"evento_id", "titulo", "promedio"}, rows: [][]driver.Value{{int64(3), "Recital", 4.5}}})

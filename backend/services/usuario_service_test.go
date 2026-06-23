@@ -98,6 +98,22 @@ func TestEntradaServiceObtenerReporteEvento(t *testing.T) {
 		}
 	})
 
+	t.Run("evento con capacidad cero", func(t *testing.T) {
+		useDatabaseStub(t,
+			eventoReporteResult(10, "Concierto", 0),
+			databaseResult{columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(0)}}},
+			databaseResult{columns: []string{"id", "nombre", "email"}},
+		)
+
+		reporte, err := NewEntradaService().ObtenerReporteEvento(10)
+		if err != nil {
+			t.Fatalf("error inesperado: %v", err)
+		}
+		if reporte.PorcentajeOcupado != 0 || reporte.Capacidad != 0 {
+			t.Fatalf("reporte inesperado para capacidad cero: %#v", reporte)
+		}
+	})
+
 	t.Run("evento inexistente", func(t *testing.T) {
 		useDatabaseStub(t, databaseResult{columns: eventoReporteColumns()})
 
@@ -112,6 +128,31 @@ func TestEntradaServiceObtenerReporteEvento(t *testing.T) {
 
 		reporte, err := NewEntradaService().ObtenerReporteEvento(10)
 		if err == nil || !stringsContains(err.Error(), "fallo evento") || reporte != nil {
+			t.Fatalf("resultado inesperado: %#v, %v", reporte, err)
+		}
+	})
+
+	t.Run("error al contar entradas", func(t *testing.T) {
+		useDatabaseStub(t,
+			eventoReporteResult(10, "Concierto", 100),
+			databaseResult{err: errors.New("fallo conteo")},
+		)
+
+		reporte, err := NewEntradaService().ObtenerReporteEvento(10)
+		if err == nil || !stringsContains(err.Error(), "fallo conteo") || reporte != nil {
+			t.Fatalf("resultado inesperado: %#v, %v", reporte, err)
+		}
+	})
+
+	t.Run("error al obtener compradores", func(t *testing.T) {
+		useDatabaseStub(t,
+			eventoReporteResult(10, "Concierto", 100),
+			databaseResult{columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}},
+			databaseResult{err: errors.New("fallo compradores")},
+		)
+
+		reporte, err := NewEntradaService().ObtenerReporteEvento(10)
+		if err == nil || !stringsContains(err.Error(), "fallo compradores") || reporte != nil {
 			t.Fatalf("resultado inesperado: %#v, %v", reporte, err)
 		}
 	})

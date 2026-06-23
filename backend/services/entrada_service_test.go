@@ -89,6 +89,7 @@ func TestEntradaServiceTransferirEntrada(t *testing.T) {
 		wantErr string
 	}{
 		{name: "inexistente", results: []databaseResult{{columns: []string{"id", "usuario_id", "evento_id", "estado"}}}, wantErr: "entrada no encontrada"},
+		{name: "error consulta entrada", results: []databaseResult{{err: errors.New("fallo entrada")}}, wantErr: "fallo entrada"},
 		{name: "otro propietario", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 9, Estado: "ACTIVA"})}, wantErr: "no puede transferir"},
 		{name: "cancelada", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "CANCELADA"})}, wantErr: "cancelada"},
 		{name: "email inexistente", results: []databaseResult{
@@ -104,6 +105,11 @@ func TestEntradaServiceTransferirEntrada(t *testing.T) {
 			usuarioResult(models.Usuario{ID: 8, Nombre: "Bruno", Email: "bruno@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
 			{},
 		}},
+		{name: "error al actualizar destino", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 8, Nombre: "Bruno", Email: "bruno@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+			{err: errors.New("fallo transferencia")},
+		}, wantErr: "fallo transferencia"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
