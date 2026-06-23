@@ -17,7 +17,7 @@ func Connect() {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		getEnv("DB_USER", "root"),
-		getEnv("DB_PASSWORD", "Popia115a"),
+		getEnv("DB_PASSWORD", "300106"),
 		getEnv("DB_HOST", "localhost"),
 		getEnv("DB_PORT", "3306"),
 		getEnv("DB_NAME", "proyecto_desarrollo_sw"),
