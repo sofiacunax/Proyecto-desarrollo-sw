@@ -132,7 +132,7 @@ Antes de ejecutar el proyecto es necesario contar con:
 ## Clonar repositorio
 
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/sofiacunax/Proyecto-desarrollo-sw.git
 ```
 
 ## Backend
@@ -233,6 +233,16 @@ go tool cover -func=coverage.out
 ## Ranking de Eventos
 
 ![Ranking](ranking-eventos.png)
+
+## Administrador
+
+![Administrador](administrador1.png)
+![Administrador](paneladministrativo.png)
+![Administrador](reporteevento.png)
+![Administrador](nuevoevento.png)
+![Administrador](eliminarevento.png)
+![Administrador](editarevento.png)
+![Administrador](administracionusuarios.png)
 
 
 
