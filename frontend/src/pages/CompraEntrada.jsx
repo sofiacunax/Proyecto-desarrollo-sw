@@ -27,7 +27,7 @@ function CompraEntrada() {
   } catch (error) {
     console.error(error)
 
-    alert("No se pudo completar la compra")
+    alert(error.message || "No se pudo completar la compra")
   }
 }
 

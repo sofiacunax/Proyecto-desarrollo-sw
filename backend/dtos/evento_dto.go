@@ -13,3 +13,7 @@ type EventoDTO struct {
 	ImagenURL   string  `json:"imagen_url"`
 	Estado      string  `json:"estado"`
 }
+
+type CambiarEstadoEventoDTO struct {
+	Estado string `json:"estado"`
+}

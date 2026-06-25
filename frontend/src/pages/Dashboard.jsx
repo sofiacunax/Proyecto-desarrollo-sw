@@ -53,9 +53,12 @@ if (token) {
     }
 
     cargarDatos();
-  }, [navigate]);
+  }, [navigate, busqueda]);
 
-  const eventosFiltrados = eventos;
+  const eventosFiltrados = eventos.filter((evento) => {
+    const estado = evento.estado || evento.Estado || "ACTIVO";
+    return estado === "ACTIVO";
+  });
 
   const handleLogout = () => {
     localStorage.removeItem("token");
