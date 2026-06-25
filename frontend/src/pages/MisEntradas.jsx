@@ -131,7 +131,7 @@ const handleTransferir = async (id) => {
           <section className="tickets-list">
             {entradas.length === 0 ? (
               <div className="ticket-card">
-                <h3>No tenés entradas compradas</h3>
+                <h3>No tenes entradas vigentes</h3>
               </div>
             ) : (
               entradas.map((entrada) => (
