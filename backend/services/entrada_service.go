@@ -28,9 +28,17 @@ func (service *EntradaService) ComprarEntrada(usuarioID int, eventoID int) error
 		return errors.New("evento invalido")
 	}
 
-	capacidad, err := service.EntradaDAO.ObtenerCapacidadEvento(eventoID)
+	evento, err := service.EventoDAO.ObtenerEventoPorID(eventoID)
 	if err != nil {
 		return err
+	}
+
+	if evento == nil {
+		return errors.New("evento no encontrado")
+	}
+
+	if evento.Estado != EstadoEventoActivo {
+		return errors.New("El evento fue cancelado y no admite nuevas compras.")
 	}
 
 	ocupados, err := service.EntradaDAO.ContarEntradasActivas(eventoID)
@@ -38,7 +46,7 @@ func (service *EntradaService) ComprarEntrada(usuarioID int, eventoID int) error
 		return err
 	}
 
-	if ocupados >= capacidad {
+	if ocupados >= evento.Capacidad {
 		return errors.New("no hay cupos disponibles")
 	}
 

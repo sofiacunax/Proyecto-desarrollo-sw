@@ -10,11 +10,13 @@ import (
 
 type PuntuacionService struct {
 	PuntuacionDAO *dao.PuntuacionDAO
+	EventoDAO     *dao.EventoDAO
 }
 
 func NewPuntuacionService() *PuntuacionService {
 	return &PuntuacionService{
 		PuntuacionDAO: dao.NewPuntuacionDAO(),
+		EventoDAO:     dao.NewEventoDAO(),
 	}
 }
 
@@ -30,6 +32,19 @@ func (service *PuntuacionService) CrearPuntuacion(usuarioID int, request dtos.Pu
 
 	if request.EventoID <= 0 {
 		return errors.New("evento invalido")
+	}
+
+	evento, err := service.EventoDAO.ObtenerEventoPorID(request.EventoID)
+	if err != nil {
+		return err
+	}
+
+	if evento == nil {
+		return errors.New("evento no encontrado")
+	}
+
+	if evento.Estado != EstadoEventoActivo {
+		return errors.New("No se puede puntuar un evento cancelado.")
 	}
 
 	puntuacion := models.Puntuacion{

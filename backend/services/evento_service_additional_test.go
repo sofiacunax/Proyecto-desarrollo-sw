@@ -128,7 +128,12 @@ func TestEventoServiceEliminarEvento(t *testing.T) {
 	})
 
 	t.Run("exitoso", func(t *testing.T) {
-		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{row}}, databaseResult{})
+		useDatabaseStub(t,
+			databaseResult{columns: columns, rows: [][]driver.Value{row}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			databaseResult{},
+		)
 		if err := NewEventoService().EliminarEvento(1); err != nil {
 			t.Fatalf("error inesperado: %v", err)
 		}
@@ -144,10 +149,76 @@ func TestEventoServiceEliminarEvento(t *testing.T) {
 	t.Run("error eliminacion", func(t *testing.T) {
 		useDatabaseStub(t,
 			databaseResult{columns: columns, rows: [][]driver.Value{row}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
 			databaseResult{err: errors.New("fallo eliminacion")},
 		)
 		if err := NewEventoService().EliminarEvento(1); err == nil {
 			t.Fatal("se esperaba error de eliminacion")
+		}
+	})
+
+	t.Run("con actividad por entradas", func(t *testing.T) {
+		useDatabaseStub(t,
+			databaseResult{columns: columns, rows: [][]driver.Value{row}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(1)}}},
+		)
+		err := NewEventoService().EliminarEvento(1)
+		if err == nil || err.Error() != MensajeEventoConActividad {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+
+	t.Run("con actividad por puntuaciones", func(t *testing.T) {
+		useDatabaseStub(t,
+			databaseResult{columns: columns, rows: [][]driver.Value{row}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			databaseResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(2)}}},
+		)
+		err := NewEventoService().EliminarEvento(1)
+		if err == nil || err.Error() != MensajeEventoConActividad {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+}
+
+func TestEventoServiceCambiarEstadoEvento(t *testing.T) {
+	columns := []string{"id", "titulo", "descripcion", "fecha", "horario", "duracion", "ubicacion", "capacidad", "precio", "categoria", "imagen_url", "estado"}
+	rowActivo := []driver.Value{int64(1), "Recital", "", "2026-01-01", "20:00", int64(60), "Cordoba", int64(10), 10.0, "", "", "ACTIVO"}
+	rowCancelado := []driver.Value{int64(1), "Recital", "", "2026-01-01", "20:00", int64(60), "Cordoba", int64(10), 10.0, "", "", "CANCELADO"}
+
+	t.Run("activo a cancelado", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{rowActivo}}, databaseResult{})
+		if err := NewEventoService().CambiarEstadoEvento(1, "CANCELADO"); err != nil {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+
+	t.Run("cancelado a activo", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{rowCancelado}}, databaseResult{})
+		if err := NewEventoService().CambiarEstadoEvento(1, "ACTIVO"); err != nil {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+
+	t.Run("estado invalido", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{rowActivo}})
+		if err := NewEventoService().CambiarEstadoEvento(1, "PAUSADO"); err == nil {
+			t.Fatal("se esperaba error por estado invalido")
+		}
+	})
+
+	t.Run("mismo estado", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns, rows: [][]driver.Value{rowActivo}})
+		if err := NewEventoService().CambiarEstadoEvento(1, "ACTIVO"); err == nil {
+			t.Fatal("se esperaba error por mismo estado")
+		}
+	})
+
+	t.Run("inexistente", func(t *testing.T) {
+		useDatabaseStub(t, databaseResult{columns: columns})
+		if err := NewEventoService().CambiarEstadoEvento(1, "ACTIVO"); err == nil {
+			t.Fatal("se esperaba evento no encontrado")
 		}
 	})
 }

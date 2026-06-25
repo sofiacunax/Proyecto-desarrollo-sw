@@ -16,6 +16,29 @@ if (response.status === 401) {
   return response.json()
 }
 
+export async function getEventosAdmin(search = "", token) {
+  const response = await fetch(
+    `${API_URL}/private/admin/eventos?search=${encodeURIComponent(search)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  const data = await response.json()
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("SesiÃ³n expirada")
+}
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudieron cargar los eventos")
+  }
+
+  return data
+}
+
 export async function getRankingEventos() {
   const response = await fetch(`${API_URL}/eventos/ranking`)
 if (response.status === 401) {
@@ -56,6 +79,32 @@ if (response.status === 401) {
 }
   if (!response.ok) {
     throw new Error(data.error || "No se pudo eliminar el evento")
+  }
+
+  return data
+}
+
+export async function cambiarEstadoEvento(id, estado, token) {
+  const response = await fetch(
+    `${API_URL}/private/admin/eventos/${id}/estado`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ estado }),
+    }
+  )
+
+  const data = await response.json()
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("SesiÃ³n expirada")
+}
+  if (!response.ok) {
+    throw new Error(data.error || "No se pudo cambiar el estado")
   }
 
   return data

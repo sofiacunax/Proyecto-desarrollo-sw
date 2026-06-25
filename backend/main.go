@@ -57,7 +57,9 @@ func main() {
 	admin.Use(utils.AdminMiddleware())
 
 	admin.POST("/eventos", eventoController.CrearEvento)
+	admin.GET("/eventos", eventoController.ObtenerTodosEventos)
 	admin.PUT("/eventos/:id", eventoController.ActualizarEvento)
+	admin.PUT("/eventos/:id/estado", eventoController.CambiarEstadoEvento)
 	admin.DELETE("/eventos/:id", eventoController.EliminarEvento)
 
 	admin.GET("/test", func(c *gin.Context) {

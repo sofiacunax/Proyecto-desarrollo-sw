@@ -17,6 +17,7 @@ export default function EditarEvento() {
   const [precio, setPrecio] = useState("");
   const [categoria, setCategoria] = useState("");
   const [imagenURL, setImagenURL] = useState("");
+  const [estado, setEstado] = useState("ACTIVO");
 
   useEffect(() => {
     async function cargarEvento() {
@@ -39,6 +40,7 @@ setFecha(
         setPrecio(evento.precio || evento.Precio || "");
         setCategoria(evento.categoria || evento.Categoria || "");
         setImagenURL(evento.imagen_url || evento.ImagenURL || "");
+        setEstado(evento.estado || evento.Estado || "ACTIVO");
       } catch (error) {
         console.error(error);
       }
@@ -50,7 +52,7 @@ setFecha(
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      await actualizarEvento(id, { titulo, descripcion, fecha, horario, duracion: Number(duracion), ubicacion, capacidad: Number(capacidad), precio: Number(precio), categoria, imagen_url: imagenURL, estado: "ACTIVO" }, token);
+      await actualizarEvento(id, { titulo, descripcion, fecha, horario, duracion: Number(duracion), ubicacion, capacidad: Number(capacidad), precio: Number(precio), categoria, imagen_url: imagenURL, estado }, token);
       alert("Evento actualizado correctamente");
       navigate("/admin/eventos");
     } catch (error) {

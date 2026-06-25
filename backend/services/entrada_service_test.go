@@ -16,10 +16,11 @@ func TestEntradaServiceComprarEntrada(t *testing.T) {
 		wantErr string
 	}{
 		{name: "evento invalido", evento: 0, wantErr: "evento invalido"},
-		{name: "error capacidad", evento: 1, results: []databaseResult{{err: errors.New("fallo capacidad")}}, wantErr: "fallo capacidad"},
-		{name: "error ocupacion", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(10)}}}, {err: errors.New("fallo ocupacion")}}, wantErr: "fallo ocupacion"},
-		{name: "sin cupo", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(2)}}}, {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(2)}}}}, wantErr: "no hay cupos"},
-		{name: "compra exitosa", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(2)}}}, {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}}, {}}},
+		{name: "error evento", evento: 1, results: []databaseResult{{err: errors.New("fallo evento")}}, wantErr: "fallo evento"},
+		{name: "evento cancelado", evento: 1, results: []databaseResult{eventoCompraResult("CANCELADO", 10)}, wantErr: "no admite nuevas compras"},
+		{name: "error ocupacion", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 10), {err: errors.New("fallo ocupacion")}}, wantErr: "fallo ocupacion"},
+		{name: "sin cupo", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 2), {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(2)}}}}, wantErr: "no hay cupos"},
+		{name: "compra exitosa", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 2), {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}}, {}}},
 	}
 
 	for _, test := range tests {
@@ -35,6 +36,15 @@ func TestEntradaServiceComprarEntrada(t *testing.T) {
 				t.Fatalf("se esperaba error %q, se obtuvo %v", test.wantErr, err)
 			}
 		})
+	}
+}
+
+func eventoCompraResult(estado string, capacidad int) databaseResult {
+	return databaseResult{
+		columns: []string{"id", "titulo", "descripcion", "fecha", "horario", "duracion", "ubicacion", "capacidad", "precio", "categoria", "imagen_url", "estado"},
+		rows: [][]driver.Value{{
+			int64(1), "Recital", "", "2026-01-01", "20:00", int64(60), "Cordoba", int64(capacidad), 10.0, "", "", estado,
+		}},
 	}
 }
 

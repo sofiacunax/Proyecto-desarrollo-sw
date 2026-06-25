@@ -35,6 +35,16 @@ func TestEventoDAO(t *testing.T) {
 		}
 	})
 
+	t.Run("listar admin todos", func(t *testing.T) {
+		row := eventoDAORow()
+		row[11] = "CANCELADO"
+		useDaoDB(t, daoDBResult{columns: eventoDAOColumns(), rows: [][]driver.Value{row}})
+		eventos, err := dao.ObtenerTodosEventos("recital")
+		if err != nil || len(eventos) != 1 || eventos[0].Estado != "CANCELADO" {
+			t.Fatalf("resultado inesperado: %#v, %v", eventos, err)
+		}
+	})
+
 	t.Run("obtener por id exitoso", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{columns: eventoDAOColumns(), rows: [][]driver.Value{eventoDAORow()}})
 		evento, err := dao.ObtenerEventoPorID(1)
@@ -70,6 +80,43 @@ func TestEventoDAO(t *testing.T) {
 	t.Run("actualizar error", func(t *testing.T) {
 		useDaoDB(t, daoDBResult{err: errors.New("fallo update")})
 		assertDAOError(t, dao.ActualizarEvento(1, models.Evento{Titulo: "Nuevo"}), "fallo update")
+	})
+
+	t.Run("actualizar estado", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{})
+		if err := dao.ActualizarEstadoEvento(1, "CANCELADO"); err != nil {
+			t.Fatalf("error inesperado: %v", err)
+		}
+	})
+
+	t.Run("actividad por entradas", func(t *testing.T) {
+		useDaoDB(t, daoDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(1)}}})
+		tieneActividad, err := dao.TieneActividad(1)
+		if err != nil || !tieneActividad {
+			t.Fatalf("actividad inesperada: %v, %v", tieneActividad, err)
+		}
+	})
+
+	t.Run("actividad por puntuaciones", func(t *testing.T) {
+		useDaoDB(t,
+			daoDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			daoDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(1)}}},
+		)
+		tieneActividad, err := dao.TieneActividad(1)
+		if err != nil || !tieneActividad {
+			t.Fatalf("actividad inesperada: %v, %v", tieneActividad, err)
+		}
+	})
+
+	t.Run("sin actividad", func(t *testing.T) {
+		useDaoDB(t,
+			daoDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			daoDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+		)
+		tieneActividad, err := dao.TieneActividad(1)
+		if err != nil || tieneActividad {
+			t.Fatalf("actividad inesperada: %v, %v", tieneActividad, err)
+		}
 	})
 
 	t.Run("eliminar exitoso", func(t *testing.T) {

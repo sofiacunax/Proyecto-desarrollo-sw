@@ -12,25 +12,27 @@ func TestPuntuacionServiceCrearPuntuacion(t *testing.T) {
 		name      string
 		usuarioID int
 		request   dtos.PuntuacionDTO
-		valid     bool
+		results   []databaseResult
+		wantErr   string
 	}{
-		{name: "menor que cero", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: -1}},
-		{name: "mayor que cinco", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: 6}},
-		{name: "usuario invalido", usuarioID: 0, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: 4}},
-		{name: "evento invalido", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 0, Puntuacion: 4}},
-		{name: "valida", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 2, Puntuacion: 5}, valid: true},
+		{name: "menor que cero", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: -1}, wantErr: "puntuacion"},
+		{name: "mayor que cinco", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: 6}, wantErr: "puntuacion"},
+		{name: "usuario invalido", usuarioID: 0, request: dtos.PuntuacionDTO{EventoID: 1, Puntuacion: 4}, wantErr: "usuario invalido"},
+		{name: "evento invalido", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 0, Puntuacion: 4}, wantErr: "evento invalido"},
+		{name: "evento cancelado", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 2, Puntuacion: 5}, results: []databaseResult{eventoCompraResult("CANCELADO", 20)}, wantErr: "evento cancelado"},
+		{name: "valida", usuarioID: 1, request: dtos.PuntuacionDTO{EventoID: 2, Puntuacion: 5}, results: []databaseResult{eventoCompraResult("ACTIVO", 20), {}}},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if test.valid {
-				useDatabaseStub(t, databaseResult{})
+			if len(test.results) > 0 {
+				useDatabaseStub(t, test.results...)
 			}
 			err := NewPuntuacionService().CrearPuntuacion(test.usuarioID, test.request)
-			if test.valid && err != nil {
+			if test.wantErr == "" && err != nil {
 				t.Fatalf("error inesperado: %v", err)
 			}
-			if !test.valid && err == nil {
-				t.Fatal("se esperaba error de validacion")
+			if test.wantErr != "" && (err == nil || !stringsContains(err.Error(), test.wantErr)) {
+				t.Fatalf("se esperaba error %q, se obtuvo %v", test.wantErr, err)
 			}
 		})
 	}

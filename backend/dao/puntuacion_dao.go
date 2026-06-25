@@ -36,6 +36,7 @@ func (dao *PuntuacionDAO) ObtenerRankingEventos() ([]dtos.RankingDTO, error) {
 	err := db.DB.Model(&models.Evento{}).
 		Select("eventos.id AS evento_id, eventos.titulo, COALESCE(AVG(puntuaciones.puntuacion), 0) AS promedio").
 		Joins("LEFT JOIN puntuaciones ON eventos.id = puntuaciones.evento_id").
+		Where("eventos.estado = ?", "ACTIVO").
 		Group("eventos.id, eventos.titulo").
 		Order("promedio DESC").
 		Scan(&ranking).Error

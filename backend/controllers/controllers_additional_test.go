@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"proyecto-desarrollo-sw/backend/services"
+	"proyecto-desarrollo-sw/backend/utils"
 )
 
 func init() {
@@ -158,15 +159,96 @@ func TestEventoControllerCaminosPrincipales(t *testing.T) {
 	})
 	t.Run("eliminar error consulta", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{err: errors.New("fallo consulta")})
-		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusInternalServerError)
+		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusBadRequest)
 	})
 	t.Run("eliminar error dao", func(t *testing.T) {
-		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{err: errors.New("fallo delete")})
-		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusInternalServerError)
+		useControllerDB(t,
+			controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}},
+			controllerDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			controllerDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			controllerDBResult{err: errors.New("fallo delete")},
+		)
+		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("eliminar con actividad", func(t *testing.T) {
+		useControllerDB(t,
+			controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}},
+			controllerDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(1)}}},
+		)
+		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusBadRequest)
 	})
 	t.Run("eliminar exitoso", func(t *testing.T) {
-		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
+		useControllerDB(t,
+			controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}},
+			controllerDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			controllerDBResult{columns: []string{"count"}, rows: [][]driver.Value{{int64(0)}}},
+			controllerDBResult{},
+		)
 		assertStatus(t, requestWithParam(http.MethodDelete, "/eventos/1", "/eventos/:id", "", controller.EliminarEvento, nil), http.StatusOK)
+	})
+	t.Run("cambiar estado id invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/x/estado", "/eventos/:id/estado", `{"estado":"CANCELADO"}`, controller.CambiarEstadoEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("cambiar estado json invalido", func(t *testing.T) {
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1/estado", "/eventos/:id/estado", "{", controller.CambiarEstadoEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("cambiar estado no encontrado", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns()})
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1/estado", "/eventos/:id/estado", `{"estado":"CANCELADO"}`, controller.CambiarEstadoEvento, nil), http.StatusNotFound)
+	})
+	t.Run("cambiar estado invalido", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}})
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1/estado", "/eventos/:id/estado", `{"estado":"PAUSADO"}`, controller.CambiarEstadoEvento, nil), http.StatusBadRequest)
+	})
+	t.Run("cambiar estado exitoso", func(t *testing.T) {
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
+		assertStatus(t, requestWithParam(http.MethodPut, "/eventos/1/estado", "/eventos/:id/estado", `{"estado":"CANCELADO"}`, controller.CambiarEstadoEvento, nil), http.StatusOK)
+	})
+}
+
+func TestEventoAdminEstadoConMiddlewares(t *testing.T) {
+	controller := NewEventoController()
+
+	router := gin.New()
+	private := router.Group("/private")
+	private.Use(utils.AuthMiddleware())
+	admin := private.Group("/admin")
+	admin.Use(utils.AdminMiddleware())
+	admin.PUT("/eventos/:id/estado", controller.CambiarEstadoEvento)
+
+	t.Run("sin token", func(t *testing.T) {
+		request := httptest.NewRequest(http.MethodPut, "/private/admin/eventos/1/estado", strings.NewReader(`{"estado":"CANCELADO"}`))
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		assertStatus(t, response, http.StatusUnauthorized)
+	})
+
+	t.Run("cliente sin permisos", func(t *testing.T) {
+		token, err := utils.GenerateToken(2, "cliente@example.com", "CLIENTE")
+		if err != nil {
+			t.Fatalf("no se pudo generar token: %v", err)
+		}
+		request := httptest.NewRequest(http.MethodPut, "/private/admin/eventos/1/estado", strings.NewReader(`{"estado":"CANCELADO"}`))
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", "Bearer "+token)
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		assertStatus(t, response, http.StatusForbidden)
+	})
+
+	t.Run("admin permitido", func(t *testing.T) {
+		token, err := utils.GenerateToken(1, "admin@example.com", "ADMIN")
+		if err != nil {
+			t.Fatalf("no se pudo generar token: %v", err)
+		}
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
+		request := httptest.NewRequest(http.MethodPut, "/private/admin/eventos/1/estado", strings.NewReader(`{"estado":"CANCELADO"}`))
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", "Bearer "+token)
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		assertStatus(t, response, http.StatusOK)
 	})
 }
 
@@ -194,11 +276,17 @@ func TestEntradaController(t *testing.T) {
 	})
 	t.Run("comprar exitoso", func(t *testing.T) {
 		useControllerDB(t,
-			controllerDBResult{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(10)}}},
+			controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}},
 			controllerDBResult{columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(2)}}},
 			controllerDBResult{},
 		)
 		assertStatus(t, performRequest(http.MethodPost, "/entradas", `{"evento_id":2}`, controller.ComprarEntrada, float64(1)), http.StatusCreated)
+	})
+	t.Run("comprar evento cancelado", func(t *testing.T) {
+		row := eventoRow()
+		row[11] = "CANCELADO"
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{row}})
+		assertStatus(t, performRequest(http.MethodPost, "/entradas", `{"evento_id":2}`, controller.ComprarEntrada, float64(1)), http.StatusBadRequest)
 	})
 	t.Run("mis entradas", func(t *testing.T) {
 		useControllerDB(t, controllerDBResult{
@@ -264,8 +352,14 @@ func TestPuntuacionController(t *testing.T) {
 		assertStatus(t, performRequest(http.MethodPost, "/puntuaciones", `{"evento_id":0,"puntuacion":5}`, controller.CrearPuntuacion, float64(1)), http.StatusBadRequest)
 	})
 	t.Run("crear exitoso", func(t *testing.T) {
-		useControllerDB(t, controllerDBResult{})
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{eventoRow()}}, controllerDBResult{})
 		assertStatus(t, performRequest(http.MethodPost, "/puntuaciones", `{"evento_id":1,"puntuacion":5}`, controller.CrearPuntuacion, float64(1)), http.StatusCreated)
+	})
+	t.Run("crear evento cancelado", func(t *testing.T) {
+		row := eventoRow()
+		row[11] = "CANCELADO"
+		useControllerDB(t, controllerDBResult{columns: eventoColumns(), rows: [][]driver.Value{row}})
+		assertStatus(t, performRequest(http.MethodPost, "/puntuaciones", `{"evento_id":1,"puntuacion":5}`, controller.CrearPuntuacion, float64(1)), http.StatusBadRequest)
 	})
 	t.Run("listar id invalido", func(t *testing.T) {
 		assertStatus(t, requestWithParam(http.MethodGet, "/eventos/x/puntuaciones", "/eventos/:id/puntuaciones", "", controller.ObtenerPuntuacionesPorEvento, nil), http.StatusBadRequest)

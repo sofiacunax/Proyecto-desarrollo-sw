@@ -51,6 +51,20 @@ func (controller *EventoController) ObtenerEventos(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, eventos)
 }
 
+func (controller *EventoController) ObtenerTodosEventos(ctx *gin.Context) {
+
+	busqueda := ctx.Query("search")
+
+	eventos, err := controller.EventoService.ObtenerTodosEventos(busqueda)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error al obtener eventos"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, eventos)
+}
+
 func (controller *EventoController) ObtenerEventoPorID(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 
@@ -104,6 +118,36 @@ func (controller *EventoController) ActualizarEvento(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "evento actualizado correctamente"})
 }
 
+func (controller *EventoController) CambiarEstadoEvento(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "id invÃ¡lido"})
+		return
+	}
+
+	var request dtos.CambiarEstadoEventoDTO
+
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "datos invÃ¡lidos"})
+		return
+	}
+
+	err = controller.EventoService.CambiarEstadoEvento(id, request.Estado)
+	if err != nil {
+		if err.Error() == "evento no encontrado" {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "estado del evento actualizado correctamente"})
+}
+
 func (controller *EventoController) EliminarEvento(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 
@@ -120,7 +164,7 @@ func (controller *EventoController) EliminarEvento(ctx *gin.Context) {
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error al eliminar evento"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 

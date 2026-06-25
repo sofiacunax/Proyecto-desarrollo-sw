@@ -31,7 +31,7 @@ func (dao *EntradaDAO) ObtenerMisEntradasDTO(usuarioID int) ([]dtos.MisEntradaDT
 	err := db.DB.Model(&models.Entrada{}).
 		Select("entradas.id, entradas.evento_id, eventos.titulo, eventos.fecha, eventos.ubicacion, entradas.estado").
 		Joins("JOIN eventos ON entradas.evento_id = eventos.id").
-		Where("entradas.usuario_id = ?", usuarioID).
+		Where("entradas.usuario_id = ? AND eventos.estado = ?", usuarioID, "ACTIVO").
 		Scan(&entradas).Error
 	if err != nil {
 		return nil, err

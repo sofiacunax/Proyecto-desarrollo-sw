@@ -24,7 +24,7 @@ CREATE TABLE eventos (
     precio DECIMAL(10,2) NOT NULL,
     categoria VARCHAR(100),
     imagen_url VARCHAR(255),
-    estado VARCHAR(20) NOT NULL
+    estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVO'
 );
 
 CREATE TABLE puntuaciones (
