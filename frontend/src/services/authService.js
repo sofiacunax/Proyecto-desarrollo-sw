@@ -16,7 +16,11 @@ export async function login(email, password) {
   )
 
   const data = await response.json()
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(data.error)
   }
@@ -45,7 +49,11 @@ export async function register(
   )
 
   const data = await response.json()
-
+if (response.status === 401) {
+  localStorage.removeItem("token")
+  window.location.href = "/"
+  throw new Error("Sesión expirada")
+}
   if (!response.ok) {
     throw new Error(data.error)
   }

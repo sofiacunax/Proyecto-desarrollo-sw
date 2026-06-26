@@ -5,6 +5,14 @@ import (
 	"proyecto-desarrollo-sw/backend/dao"
 	"proyecto-desarrollo-sw/backend/dtos"
 	"proyecto-desarrollo-sw/backend/models"
+	"strings"
+)
+
+const (
+	EstadoEventoActivo    = "ACTIVO"
+	EstadoEventoCancelado = "CANCELADO"
+
+	MensajeEventoConActividad = "No se puede eliminar un evento que posee actividad. Si desea que deje de estar disponible, cambie su estado a CANCELADO."
 )
 
 type EventoService struct {
@@ -42,9 +50,12 @@ func (service *EventoService) CrearEvento(request dtos.EventoDTO) error {
 		return errors.New("el precio no puede ser negativo")
 	}
 
-	estado := request.Estado
+	estado := strings.ToUpper(strings.TrimSpace(request.Estado))
 	if estado == "" {
-		estado = "ACTIVO"
+		estado = EstadoEventoActivo
+	}
+	if !estadoEventoValido(estado) {
+		return errors.New("estado invalido. Debe ser ACTIVO o CANCELADO")
 	}
 
 	evento := models.Evento{
@@ -66,6 +77,10 @@ func (service *EventoService) CrearEvento(request dtos.EventoDTO) error {
 
 func (service *EventoService) ObtenerEventos(busqueda string) ([]models.Evento, error) {
 	return service.EventoDAO.ObtenerEventos(busqueda)
+}
+
+func (service *EventoService) ObtenerTodosEventos(busqueda string) ([]models.Evento, error) {
+	return service.EventoDAO.ObtenerTodosEventos(busqueda)
 }
 
 func (service *EventoService) ObtenerEventoPorID(id int) (*models.Evento, error) {
@@ -106,9 +121,12 @@ func (service *EventoService) ActualizarEvento(id int, request dtos.EventoDTO) e
 		return errors.New("el precio no puede ser negativo")
 	}
 
-	estado := request.Estado
+	estado := strings.ToUpper(strings.TrimSpace(request.Estado))
 	if estado == "" {
-		estado = "ACTIVO"
+		estado = EstadoEventoActivo
+	}
+	if !estadoEventoValido(estado) {
+		return errors.New("estado invalido. Debe ser ACTIVO o CANCELADO")
 	}
 
 	evento := models.Evento{
@@ -128,6 +146,28 @@ func (service *EventoService) ActualizarEvento(id int, request dtos.EventoDTO) e
 	return service.EventoDAO.ActualizarEvento(id, evento)
 }
 
+func (service *EventoService) CambiarEstadoEvento(id int, estado string) error {
+	eventoExistente, err := service.EventoDAO.ObtenerEventoPorID(id)
+	if err != nil {
+		return err
+	}
+
+	if eventoExistente == nil {
+		return errors.New("evento no encontrado")
+	}
+
+	estado = strings.ToUpper(strings.TrimSpace(estado))
+	if !estadoEventoValido(estado) {
+		return errors.New("estado invalido. Debe ser ACTIVO o CANCELADO")
+	}
+
+	if eventoExistente.Estado == estado {
+		return errors.New("el evento ya se encuentra en estado " + estado)
+	}
+
+	return service.EventoDAO.ActualizarEstadoEvento(id, estado)
+}
+
 func (service *EventoService) EliminarEvento(id int) error {
 	eventoExistente, err := service.EventoDAO.ObtenerEventoPorID(id)
 	if err != nil {
@@ -138,5 +178,18 @@ func (service *EventoService) EliminarEvento(id int) error {
 		return errors.New("evento no encontrado")
 	}
 
+	tieneActividad, err := service.EventoDAO.TieneActividad(id)
+	if err != nil {
+		return err
+	}
+
+	if tieneActividad {
+		return errors.New(MensajeEventoConActividad)
+	}
+
 	return service.EventoDAO.EliminarEvento(id)
+}
+
+func estadoEventoValido(estado string) bool {
+	return estado == EstadoEventoActivo || estado == EstadoEventoCancelado
 }

@@ -1,0 +1,5 @@
+@import "./CrearEvento.css";
+
+.edit-event-page .event-form-header { background: linear-gradient(135deg, #ffffff 15%, #f3ecfa 100%); }
+.edit-event-page .event-submit-button { background: #8b5fc7; }
+.edit-event-page .event-submit-button:hover { background: #7648b5; }

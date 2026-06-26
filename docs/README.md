@@ -10,137 +10,286 @@
 
 Desarrollo de Software - UCC
 
-## Descripción
+---
 
-Este proyecto consiste en el desarrollo de una aplicación web para la gestión de eventos y venta de entradas.
+# Descripción
 
-El sistema permitirá a los usuarios explorar eventos disponibles, consultar información detallada, adquirir entradas, administrar sus compras y transferir entradas a otros usuarios.
+Sistema web para la gestión de eventos y venta de entradas inspirado en plataformas como Ticketek.
 
-Además, los administradores podrán gestionar eventos y consultar reportes de ventas y ocupación.
+La aplicación permite a los usuarios registrarse, iniciar sesión, explorar eventos, consultar información detallada, adquirir entradas, administrar sus compras, transferir entradas a otros usuarios y calificar eventos mediante un sistema de puntuación.
 
-Como funcionalidad adicional, se incorporará un sistema de puntuación mediante estrellas que permitirá a los usuarios valorar eventos y visualizar un ranking de los mejor calificados.
+Además, incorpora funcionalidades administrativas para la gestión de eventos y consulta de métricas de ventas y ocupación.
 
 ---
 
-## Estado del Proyecto
+# Tecnologías Utilizadas
 
-Actualmente el proyecto se encuentra en fase de análisis y diseño.
-
-Se encuentran definidos:
-
-* Organización del proyecto.
-* Modelo de datos.
-* Requisitos funcionales.
-* Diseño de endpoints.
-* Decisiones de diseño iniciales.
-
----
-
-## Tecnologías Utilizadas
-
-### Backend
+## Backend
 
 * Go
 * Gin
 * GORM
 
-### Frontend
+## Frontend
 
 * React
+* React Router
 
-### Base de Datos
+## Base de Datos
 
 * MySQL
 
-### Seguridad
+## Seguridad
 
-* JWT
+* JWT (JSON Web Token)
+* Hashing de contraseñas
 
-### Infraestructura
+## Infraestructura
 
 * Docker
 * Docker Compose
 
-### Testing
+## Testing
 
 * Go Testing
 * Testify
 
 ---
 
-## Funcionalidades Principales
+# Arquitectura
 
-### Cliente
+El proyecto fue desarrollado utilizando una arquitectura por capas:
+
+```text
+Frontend (React)
+        ↓
+API REST (Gin)
+        ↓
+Controllers
+        ↓
+Services
+        ↓
+DAO
+        ↓
+MySQL
+```
+
+Esta arquitectura permite desacoplar la interfaz de usuario, la lógica de negocio y el acceso a datos, mejorando la mantenibilidad y escalabilidad del sistema.
+
+---
+
+# Funcionalidades Implementadas
+
+## Cliente
 
 * Registro e inicio de sesión.
 * Exploración de eventos.
 * Consulta de detalle de eventos.
 * Compra de entradas.
-* Consulta de entradas adquiridas.
+* Consulta de historial de entradas adquiridas.
 * Cancelación de entradas.
-* Transferencia de entradas.
+* Transferencia de entradas entre usuarios.
 * Puntuación de eventos.
+* Ranking de eventos mejor calificados.
 
-### Administrador
+## Administrador
 
 * Creación de eventos.
 * Modificación de eventos.
-* Cancelación de eventos.
+* Eliminación de eventos.
+* Consulta de métricas de ocupación.
 * Consulta de reportes de ventas.
-* Consulta de reportes de ocupación.
 
 ---
 
-## Funcionalidad Adicional
+# Funcionalidad Adicional
 
-### Sistema de Puntuación
+## Sistema de Puntuación
 
-Los usuarios podrán calificar eventos utilizando una escala de 0 a 5 estrellas.
+Los usuarios pueden calificar eventos utilizando una escala de 0 a 5 estrellas.
 
-El sistema calculará el promedio de puntuaciones y permitirá visualizar un ranking de eventos ordenado según su valoración.
+El sistema calcula automáticamente el promedio de puntuaciones y genera un ranking de eventos ordenados según su valoración.
+
+Cada usuario puede puntuar un evento una única vez.
 
 ---
 
-## Estructura del Proyecto
+# Requisitos Previos
 
+Antes de ejecutar el proyecto es necesario contar con:
+
+* Go 1.26 o superior
+* Node.js
+* npm
+* MySQL
+* Docker Desktop
+* Git
+
+---
+
+# Instalación Local
+
+## Clonar repositorio
+
+```bash
+git clone https://github.com/sofiacunax/Proyecto-desarrollo-sw.git
+```
+
+## Backend
+
+```bash
+cd backend
+
+go mod download
+
+go run main.go
+```
+
+## Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+---
+
+# Ejecución con Docker
+
+El proyecto se encuentra completamente dockerizado mediante Docker Compose.
+
+## Servicios incluidos
+
+* Frontend
+* Backend
+* MySQL
+
+## Levantar aplicación
+
+```bash
+docker compose up --build
+```
+
+## Puertos
+
+| Servicio | Puerto |
+| -------- | ------ |
+| Frontend | 5173   |
+| Backend  | 8080   |
+| MySQL    | 3306   |
+
+---
+
+# Testing
+
+Ejecutar todos los tests:
+
+```bash
+go test ./...
+```
+
+Ejecutar con cobertura:
+
+```bash
+go test ./... -cover
+```
+
+Generar reporte de cobertura:
+
+```bash
+go test ./... -coverprofile=coverage.out
+
+go tool cover -func=coverage.out
+```
+
+---
+
+# Capturas de Pantalla
+
+## Login
+
+![Login](login.png)
+
+## Dashboard
+
+![Dashboard](dashboard1.png)
+![Dashboard](dashboard2.png)
+
+## Compra de Entradas
+
+![Compra](compra-entrada.png)
+
+## Mis Entradas
+
+![Mis Entradas](mis-entradas.png)
+
+## Transferencia de Entradas
+
+![Transferencia](transferencia-entrada.png)
+
+## Ranking de Eventos
+
+![Ranking](ranking-eventos.png)
+
+## Administrador
+
+![Administrador](administrador1.png)
+![Administrador](paneladministrativo.png)
+![Administrador](reporteevento.png)
+![Administrador](nuevoevento.png)
+![Administrador](eliminarevento.png)
+![Administrador](editarevento.png)
+![Administrador](administracionusuarios.png)
+
+
+
+---
+
+# Diagrama de Base de Datos
+
+El siguiente diagrama representa las entidades principales del sistema y sus relaciones.
+
+![DER](der.png)
+
+---
+
+# Decisiones de Diseño
+
+## Arquitectura por Capas
+
+Se implementó una arquitectura Controller → Service → DAO para separar responsabilidades y facilitar el mantenimiento del sistema.
+
+## Autenticación mediante JWT
+
+Se utilizaron tokens JWT para proteger los endpoints sensibles y garantizar la autenticación de los usuarios.
+
+## Uso de DTOs
+
+Se utilizaron DTOs para desacoplar los modelos internos de la información expuesta mediante la API REST.
+
+## Transferencia de Entradas
+
+La transferencia de entradas mantiene la integridad del historial modificando únicamente el propietario de la entrada sin recrear registros.
+
+## Sistema de Puntuaciones
+
+Se implementó una restricción que impide que un mismo usuario pueda puntuar un evento más de una vez.
+
+---
+
+# Estructura del Proyecto
+
+```text
 Proyecto-desarrollo-sw/
 │
 ├── backend/
 ├── frontend/
 ├── docs/
-│   ├── organizacion-proyecto.md
-│   ├── modelo-datos.md
-│   ├── decisiones-diseno.md
-│   ├── endpoints.md
-│   └── requisitos-funcionales.md
-│
-├── README.md
-└── .gitignore
-
-
-## Documentación
-
-La documentación técnica y funcional se encuentra disponible dentro de la carpeta:
-
-```txt
-docs/
+├── docker-compose.yml
+├── .env
+├── .env.example
+└── README.md
 ```
-
----
-
-
-## Diagrama Entidad-Relación
-
-El siguiente diagrama representa las entidades principales del sistema y sus relaciones.
-
-![DER](docs/der.png)
-
-## Próximos Pasos
-
-- Implementación del backend en Go.
-- Desarrollo del frontend en React.
-- Configuración de Docker Compose.
-- Implementación de testing automatizado.
-
----
-

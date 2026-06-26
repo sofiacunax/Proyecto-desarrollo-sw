@@ -33,19 +33,21 @@ function MisEntradas() {
       alert("No se pudo cancelar la entrada");
     }
   };
-  const handleTransferir = async (id) => {
-  const nuevoUsuarioID = prompt(
-    "Ingrese el ID del usuario destino"
+const handleTransferir = async (id) => {
+
+  const emailDestino = prompt(
+    "Ingrese el email del usuario destino"
   )
 
-  if (!nuevoUsuarioID) return
+  if (!emailDestino) return
 
   try {
+
     const token = localStorage.getItem("token")
 
     const response = await transferirEntrada(
       id,
-      Number(nuevoUsuarioID),
+      emailDestino,
       token
     )
 
@@ -55,9 +57,16 @@ function MisEntradas() {
       await obtenerMisEntradas(token)
 
     setEntradas(entradasActualizadas || [])
+
   } catch (error) {
+
     console.error(error)
-    alert("No se pudo transferir la entrada")
+
+    alert(
+      error.message ||
+      "No se pudo transferir la entrada"
+    )
+
   }
 }
 
@@ -122,14 +131,18 @@ function MisEntradas() {
           <section className="tickets-list">
             {entradas.length === 0 ? (
               <div className="ticket-card">
-                <h3>No tenés entradas compradas</h3>
+                <h3>No tenes entradas vigentes</h3>
               </div>
             ) : (
               entradas.map((entrada) => (
                 <div key={entrada.id} className="ticket-card">
                   <h3>{entrada.titulo}</h3>
 
-                  <p>📅 {entrada.fecha}</p>
+                  <p>
+  📅 {new Date(
+    entrada.fecha
+  ).toLocaleDateString("es-AR")}
+</p>
 
                   <p>📍 {entrada.ubicacion}</p>
 

@@ -16,10 +16,11 @@ func TestEntradaServiceComprarEntrada(t *testing.T) {
 		wantErr string
 	}{
 		{name: "evento invalido", evento: 0, wantErr: "evento invalido"},
-		{name: "error capacidad", evento: 1, results: []databaseResult{{err: errors.New("fallo capacidad")}}, wantErr: "fallo capacidad"},
-		{name: "error ocupacion", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(10)}}}, {err: errors.New("fallo ocupacion")}}, wantErr: "fallo ocupacion"},
-		{name: "sin cupo", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(2)}}}, {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(2)}}}}, wantErr: "no hay cupos"},
-		{name: "compra exitosa", evento: 1, results: []databaseResult{{columns: []string{"capacidad"}, rows: [][]driver.Value{{int64(2)}}}, {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}}, {}}},
+		{name: "error evento", evento: 1, results: []databaseResult{{err: errors.New("fallo evento")}}, wantErr: "fallo evento"},
+		{name: "evento cancelado", evento: 1, results: []databaseResult{eventoCompraResult("CANCELADO", 10)}, wantErr: "no admite nuevas compras"},
+		{name: "error ocupacion", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 10), {err: errors.New("fallo ocupacion")}}, wantErr: "fallo ocupacion"},
+		{name: "sin cupo", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 2), {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(2)}}}}, wantErr: "no hay cupos"},
+		{name: "compra exitosa", evento: 1, results: []databaseResult{eventoCompraResult("ACTIVO", 2), {columns: []string{"cantidad"}, rows: [][]driver.Value{{int64(1)}}}, {}}},
 	}
 
 	for _, test := range tests {
@@ -35,6 +36,15 @@ func TestEntradaServiceComprarEntrada(t *testing.T) {
 				t.Fatalf("se esperaba error %q, se obtuvo %v", test.wantErr, err)
 			}
 		})
+	}
+}
+
+func eventoCompraResult(estado string, capacidad int) databaseResult {
+	return databaseResult{
+		columns: []string{"id", "titulo", "descripcion", "fecha", "horario", "duracion", "ubicacion", "capacidad", "precio", "categoria", "imagen_url", "estado"},
+		rows: [][]driver.Value{{
+			int64(1), "Recital", "", "2026-01-01", "20:00", int64(60), "Cordoba", int64(capacidad), 10.0, "", "", estado,
+		}},
 	}
 }
 
@@ -89,14 +99,36 @@ func TestEntradaServiceTransferirEntrada(t *testing.T) {
 		wantErr string
 	}{
 		{name: "inexistente", results: []databaseResult{{columns: []string{"id", "usuario_id", "evento_id", "estado"}}}, wantErr: "entrada no encontrada"},
+		{name: "error consulta entrada", results: []databaseResult{{err: errors.New("fallo entrada")}}, wantErr: "fallo entrada"},
 		{name: "otro propietario", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 9, Estado: "ACTIVA"})}, wantErr: "no puede transferir"},
 		{name: "cancelada", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "CANCELADA"})}, wantErr: "cancelada"},
-		{name: "exitosa", results: []databaseResult{entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}), {}}},
+		{name: "email inexistente", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			{columns: []string{"id", "nombre", "email", "password_hash", "rol"}},
+		}, wantErr: "usuario destino no encontrado"},
+		{name: "mismo usuario", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 5, Nombre: "Ana", Email: "anna@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+		}, wantErr: "mismo"},
+		{name: "exitosa", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 8, Nombre: "Bruno", Email: "bruno@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+			{},
+		}},
+		{name: "error al actualizar destino", results: []databaseResult{
+			entradaResult(models.Entrada{ID: 1, UsuarioID: 5, Estado: "ACTIVA"}),
+			usuarioResult(models.Usuario{ID: 8, Nombre: "Bruno", Email: "bruno@test.com", PasswordHash: "hash", Rol: "CLIENTE"}),
+			{err: errors.New("fallo transferencia")},
+		}, wantErr: "fallo transferencia"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			useDatabaseStub(t, test.results...)
-			err := NewEntradaService().TransferirEntrada(1, 5, 8)
+			err := NewEntradaService().TransferirEntrada(
+				1,
+				5,
+				"anna@test.com",
+			)
 			assertServiceError(t, err, test.wantErr)
 		})
 	}
@@ -106,6 +138,13 @@ func entradaResult(item models.Entrada) databaseResult {
 	return databaseResult{
 		columns: []string{"id", "usuario_id", "evento_id", "estado"},
 		rows:    [][]driver.Value{{int64(item.ID), int64(item.UsuarioID), int64(item.EventoID), item.Estado}},
+	}
+}
+
+func usuarioResult(item models.Usuario) databaseResult {
+	return databaseResult{
+		columns: []string{"id", "nombre", "email", "password_hash", "rol"},
+		rows:    [][]driver.Value{{int64(item.ID), item.Nombre, item.Email, item.PasswordHash, item.Rol}},
 	}
 }
 

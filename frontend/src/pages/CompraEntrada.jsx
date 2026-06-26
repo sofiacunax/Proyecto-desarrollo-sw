@@ -27,7 +27,7 @@ function CompraEntrada() {
   } catch (error) {
     console.error(error)
 
-    alert("No se pudo completar la compra")
+    alert(error.message || "No se pudo completar la compra")
   }
 }
 
@@ -87,8 +87,10 @@ function CompraEntrada() {
             </div>
 
             <p>
-              📅 {evento.fecha || evento.Fecha}
-            </p>
+  📅 {new Date(
+    evento.fecha || evento.Fecha
+  ).toLocaleDateString("es-AR")}
+</p>
 
             <p>
               🕒 {evento.horario || evento.Horario}

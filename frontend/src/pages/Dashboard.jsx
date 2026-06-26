@@ -12,6 +12,22 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const token = localStorage.getItem("token")
+
+let esAdmin = false
+
+if (token) {
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1])
+    )
+
+    esAdmin = payload.rol === "ADMIN"
+  } catch {
+    esAdmin = false
+  }
+}
+
   useEffect(() => {
     async function cargarDatos() {
       try {
@@ -37,9 +53,12 @@ export default function Dashboard() {
     }
 
     cargarDatos();
-  }, [busqueda]);
+  }, [navigate, busqueda]);
 
-  const eventosFiltrados = eventos;
+  const eventosFiltrados = eventos.filter((evento) => {
+    const estado = evento.estado || evento.Estado || "ACTIVO";
+    return estado === "ACTIVO";
+  });
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -60,6 +79,11 @@ export default function Dashboard() {
           <span className="active">Eventos</span>
 
           <span onClick={() => navigate("/mis-entradas")}>Mis Entradas</span>
+          {esAdmin && (
+  <span onClick={() => navigate("/admin/eventos")}>
+    Administración
+  </span>
+)}
 
           <span>Sobre Nosotros</span>
         </div>
@@ -168,7 +192,12 @@ function EventCard({ evento }) {
     evento.Nombre ||
     "Evento";
   const descripcion = evento.descripcion || evento.Descripcion || "";
-  const fecha = evento.fecha || evento.Fecha || "";
+  const fecha =
+  evento.fecha || evento.Fecha
+    ? new Date(
+        evento.fecha || evento.Fecha
+      ).toLocaleDateString("es-AR")
+    : "";
   const horario = evento.horario || evento.Horario || "";
   const ubicacion = evento.ubicacion || evento.Ubicacion || "";
   const categoria = evento.categoria || evento.Categoria || "Evento";

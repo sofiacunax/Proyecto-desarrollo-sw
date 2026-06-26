@@ -19,6 +19,22 @@ func (dao *EventoDAO) CrearEvento(evento models.Evento) error {
 
 func (dao *EventoDAO) ObtenerEventos(busqueda string) ([]models.Evento, error) {
 	var eventos []models.Evento
+	consulta := db.DB.Where("estado = ?", "ACTIVO")
+	if busqueda != "" {
+		filtro := "%" + busqueda + "%"
+		consulta = consulta.Where(
+			"titulo LIKE ? OR ubicacion LIKE ? OR categoria LIKE ?",
+			filtro, filtro, filtro,
+		)
+	}
+	if err := consulta.Find(&eventos).Error; err != nil {
+		return nil, err
+	}
+	return eventos, nil
+}
+
+func (dao *EventoDAO) ObtenerTodosEventos(busqueda string) ([]models.Evento, error) {
+	var eventos []models.Evento
 	consulta := db.DB
 	if busqueda != "" {
 		filtro := "%" + busqueda + "%"
@@ -53,6 +69,34 @@ func (dao *EventoDAO) ActualizarEvento(id int, evento models.Evento) error {
 		"categoria": evento.Categoria, "imagen_url": evento.ImagenURL,
 		"estado": evento.Estado,
 	}).Error
+}
+
+func (dao *EventoDAO) ActualizarEstadoEvento(id int, estado string) error {
+	return db.DB.Model(&models.Evento{}).
+		Where("id = ?", id).
+		Update("estado", estado).Error
+}
+
+func (dao *EventoDAO) TieneActividad(id int) (bool, error) {
+	var entradas int64
+	if err := db.DB.Model(&models.Entrada{}).
+		Where("evento_id = ?", id).
+		Count(&entradas).Error; err != nil {
+		return false, err
+	}
+
+	if entradas > 0 {
+		return true, nil
+	}
+
+	var puntuaciones int64
+	if err := db.DB.Model(&models.Puntuacion{}).
+		Where("evento_id = ?", id).
+		Count(&puntuaciones).Error; err != nil {
+		return false, err
+	}
+
+	return puntuaciones > 0, nil
 }
 
 func (dao *EventoDAO) EliminarEvento(id int) error {

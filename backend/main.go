@@ -25,6 +25,8 @@ func main() {
 	eventoController := controllers.NewEventoController()
 	puntuacionController := controllers.NewPuntuacionController()
 	entradaController := controllers.NewEntradaController()
+	usuarioController :=
+		controllers.NewUsuarioController()
 
 	router.POST("/auth/register", authController.Register)
 	router.POST("/auth/login", authController.Login)
@@ -51,10 +53,13 @@ func main() {
 	})
 
 	admin := private.Group("/admin")
+
 	admin.Use(utils.AdminMiddleware())
 
 	admin.POST("/eventos", eventoController.CrearEvento)
+	admin.GET("/eventos", eventoController.ObtenerTodosEventos)
 	admin.PUT("/eventos/:id", eventoController.ActualizarEvento)
+	admin.PUT("/eventos/:id/estado", eventoController.CambiarEstadoEvento)
 	admin.DELETE("/eventos/:id", eventoController.EliminarEvento)
 
 	admin.GET("/test", func(c *gin.Context) {
@@ -62,6 +67,18 @@ func main() {
 			"message": "solo admin",
 		})
 	})
+	admin.GET(
+		"/usuarios",
+		usuarioController.ObtenerUsuarios,
+	)
+	admin.PUT(
+		"/usuarios/:id/rol",
+		usuarioController.CambiarRol,
+	)
+	admin.GET(
+		"/eventos/:id/reporte",
+		entradaController.ObtenerReporteEvento,
+	)
 
 	router.Run(":8080")
 }
